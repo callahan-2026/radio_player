@@ -1,306 +1,2284 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0f0f10">
-<title>Radio</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Radio Stream Player</title>
 <style>
-  :root {
-    --bg: #0f0f10;
-    --surface: #17171a;
-    --surface-2: #1e1e22;
-    --border: #2a2a30;
-    --text: #f2f2f4;
-    --muted: #9a9aa2;
-    --accent: #3b82f6;
-    --danger: #ef4444;
-  }
-  * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; }
-  body {
-    background: var(--bg); color: var(--text);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    display: flex; flex-direction: column;
-    -webkit-tap-highlight-color: transparent;
-  }
-  header {
-    position: sticky; top: 0; z-index: 10;
-    background: rgba(15,15,16,.92); backdrop-filter: blur(8px);
-    border-bottom: 1px solid var(--border);
-    padding: .75rem 1rem .5rem;
-  }
-  .brand { font-weight: 700; font-size: 1.05rem; margin-bottom: .6rem; letter-spacing: .3px; }
-  input[type="search"] {
-    width: 100%; padding: .65rem .8rem; border-radius: 10px;
-    border: 1px solid var(--border); background: var(--surface);
-    color: var(--text); font-size: .95rem; outline: none;
-  }
-  input[type="search"]:focus { border-color: var(--accent); }
-  .tabs { display: flex; gap: .25rem; margin-top: .5rem; }
-  .tab {
-    padding: .45rem .85rem; border-radius: 8px; cursor: pointer;
-    font-size: .85rem; color: var(--muted); border: 0; background: transparent;
-  }
-  .tab.active { background: var(--surface-2); color: var(--text); }
-  main { flex: 1; overflow-y: auto; padding: .5rem 0 6rem; }
-  ul { list-style: none; padding: 0; margin: 0; }
-  li.station {
-    display: flex; gap: .8rem; align-items: center;
-    padding: .7rem 1rem; cursor: pointer;
-    border-bottom: 1px solid var(--border);
-  }
-  li.station:hover, li.station.active { background: var(--surface); }
-  li.station.active { box-shadow: inset 3px 0 0 var(--accent); }
-  .logo {
-    width: 44px; height: 44px; border-radius: 50%;
-    background: var(--surface-2); object-fit: cover; flex-shrink: 0;
-  }
-  .info { flex: 1; min-width: 0; }
-  .name { font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .meta { font-size: .78rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
-  .fav {
-    background: transparent; border: 0; color: var(--muted);
-    font-size: 1.2rem; cursor: pointer; padding: .25rem .4rem;
-  }
-  .fav.on { color: #f5b301; }
-  .empty { color: var(--muted); text-align: center; padding: 2rem 1rem; }
-  .status { color: var(--muted); text-align: center; padding: 1rem; font-size: .85rem; }
+:root{
+  --bg:#12151b; --panel:#1b2029; --panel2:#232a35; --text:#e6e9ef;
+  --muted:#9aa4b2; --accent:#4da3ff; --green:#22c55e; --red:#ef4444;
+  --border:#2c3542; --shadow:rgba(0,0,0,.4);
+  --wiki-bg:#1b2029; --wiki-border:#3a4552; --wiki-header:#232a35;
+  --wiki-row-alt:#1f2630; --wiki-link:#7bb8ff;
+  --star:#facc15;
+  --sep1-bg:#1e3a5f; --sep1-fg:#9ecbff; --sep1-bd:#2d5f9a;
+  --sep2-bg:#3a2f1e; --sep2-fg:#f0d08a; --sep2-bd:#6b5528;
+  --sep3-bg:#1e3a2f; --sep3-fg:#9ee6b8; --sep3-bd:#2d6b4a;
+  --sep4-bg:#3a1e3a; --sep4-fg:#e0a8e0; --sep4-bd:#6b2d6b;
+  --sep5-bg:#3a1e22; --sep5-fg:#f0a8b0; --sep5-bd:#6b2d35;
+  --sep6-bg:#1e2f3a; --sep6-fg:#8ad0e6; --sep6-bd:#2d5566;
+}
+html[data-theme="light"]{
+  --bg:#f4f6fb; --panel:#ffffff; --panel2:#eef1f7; --text:#1a1f29;
+  --muted:#5d6673; --accent:#2563eb; --green:#16a34a; --red:#dc2626;
+  --border:#d6dbe4; --shadow:rgba(0,0,0,.12);
+  --wiki-bg:#ffffff; --wiki-border:#a2a9b1; --wiki-header:#eaecf0;
+  --wiki-row-alt:#f8f9fa; --wiki-link:#3366cc;
+  --star:#d97706;
+  --sep1-bg:#dbeafe; --sep1-fg:#1e40af; --sep1-bd:#93c5fd;
+  --sep2-bg:#fef3c7; --sep2-fg:#92400e; --sep2-bd:#fcd34d;
+  --sep3-bg:#dcfce7; --sep3-fg:#166534; --sep3-bd:#86efac;
+  --sep4-bg:#f3e8ff; --sep4-fg:#6b21a8; --sep4-bd:#d8b4fe;
+  --sep5-bg:#ffe4e6; --sep5-fg:#9f1239; --sep5-bd:#fda4af;
+  --sep6-bg:#e0f2fe; --sep6-fg:#075985; --sep6-bd:#7dd3fc;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+body{
+  margin:0; font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;
+  background:var(--bg); color:var(--text); padding:12px;
+  transition:background .2s,color .2s;
+  font-size:14px; font-weight:400;
+  -webkit-text-size-adjust:100%;
+}
+.header-bar{
+  display:flex; align-items:center; gap:10px; margin:0 0 10px 0;
+  position:sticky; top:0; z-index:40;
+  background:var(--bg); padding:8px 0;
+  box-shadow:0 2px 8px rgba(0,0,0,.25);
+  border-bottom:1px solid var(--border);
+}
+html[data-theme="light"] .header-bar{ box-shadow:0 2px 8px rgba(0,0,0,.08); }
+.header-bar h2.title{font-size:20px; font-weight:700; margin:0; flex:1; text-align:center; padding:0;}
+.hamburger{
+  background:transparent; border:1px solid var(--border);
+  border-radius:8px; padding:6px 9px; cursor:pointer;
+  display:flex; flex-direction:column; gap:4px; flex:0 0 auto;
+}
+.hamburger span{display:block; width:20px; height:2px; background:var(--text); border-radius:2px;}
+.hamburger:hover{border-color:var(--accent)}
+.hamburger:hover span{background:var(--accent)}
+.menu-overlay{position:fixed; inset:0; background:var(--shadow); display:none; z-index:60;}
+.menu-overlay.open{display:block}
+.side-menu{
+  position:fixed; top:0; left:0; height:100%; width:270px; max-width:82vw;
+  background:var(--panel); border-right:1px solid var(--border);
+  z-index:61; padding:14px; display:flex; flex-direction:column; gap:6px;
+  transform:translateX(-100%); transition:transform .22s ease; overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.side-menu.open{transform:translateX(0)}
+.side-menu .menu-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;}
+.side-menu .menu-head .menu-title{font-weight:700;font-size:16px}
+.side-menu .close-x{background:transparent; border:1px solid var(--border); border-radius:8px;
+  width:32px; height:32px; font-size:18px; line-height:1; cursor:pointer; color:var(--text);}
+.side-menu .close-x:hover{border-color:var(--accent);color:var(--accent)}
+.side-menu button.menu-item{width:100%; text-align:left; background:transparent;
+  border:1px solid transparent; padding:11px 12px; border-radius:8px; color:var(--text); font-size:14px; cursor:pointer;}
+.side-menu button.menu-item:hover{background:var(--panel2);border-color:var(--border)}
+.side-menu button.menu-item.danger{color:var(--red)}
+.side-menu button.menu-item.danger:hover{background:rgba(239,68,68,.12)}
+.side-menu button.menu-item.active{background:rgba(77,163,255,.15); border-color:var(--accent); color:var(--accent); font-weight:600;}
+.side-menu hr.menu-hr{border:none; border-top:1px solid var(--border); margin:6px 0;}
 
-  #player {
-    position: fixed; left: 0; right: 0; bottom: 0;
-    background: rgba(23,23,26,.96); backdrop-filter: blur(10px);
-    border-top: 1px solid var(--border);
-    padding: .6rem .8rem calc(.6rem + env(safe-area-inset-bottom));
-    display: grid; grid-template-columns: auto 1fr auto; gap: .75rem; align-items: center;
-  }
-  #player .logo { width: 42px; height: 42px; }
-  #player .info .name { font-size: .9rem; }
-  #player .info .meta { font-size: .75rem; }
-  .controls { display: flex; align-items: center; gap: .5rem; }
-  .btn {
-    background: var(--accent); color: white; border: 0;
-    width: 44px; height: 44px; border-radius: 50%;
-    font-size: 1.1rem; cursor: pointer; display: grid; place-items: center;
-  }
-  .btn:disabled { background: var(--surface-2); color: var(--muted); cursor: default; }
-  .vol { width: 90px; accent-color: var(--accent); }
-  @media (max-width: 420px) { .vol { display: none; } }
-  .banner {
-    background: var(--danger); color: white; font-size: .8rem;
-    padding: .5rem 1rem; text-align: center;
-  }
+.player{background:var(--panel); border:1px solid var(--border); border-radius:12px;
+  padding:12px; margin-bottom:12px; width:100%; max-width:100%;}
+.player .top-row{display:flex; flex-direction:column; gap:10px; align-items:stretch;}
+.player .top-row img {
+  width: 100%; height: auto; max-height: 200px;
+  object-fit: contain; background: #000;
+  border-radius: 10px; border: 1px solid var(--border);
+  display: block; margin: 0 auto;
+}
+.player .head{display:flex; flex-direction:column; gap:6px}
+.player .head .name-wrap{display:flex; align-items:center; justify-content:center; gap:6px;}
+.player .head .name{font-weight:800; font-size:22px; line-height:1.25; text-align:center; word-break:break-word;}
+.player .head .sub{display:flex; flex-direction:column; gap:2px;}
+.player .head .sub .info-line{color:var(--muted); font-size:14px; line-height:1.4;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.player .head .sub .info-line .label{color:var(--text); font-weight:600; margin-right:4px;}
+.player .badges{display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;}
+.player .badges .badge{font-size:14px; padding:9px 12px; border-radius:8px;
+  background:var(--panel2); color:var(--text); border:1px solid var(--border);
+  font-weight:400; flex:1 1 0; text-align:center; min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.player .badges .badge.online{background:rgba(34,197,94,.15); color:var(--green); border-color:rgba(34,197,94,.4);}
+.player .badges .badge.offline{background:rgba(239,68,68,.15); color:var(--red); border-color:rgba(239,68,68,.4);}
+.player .badges .badge.type{background:rgba(77,163,255,.15); color:var(--accent); border-color:rgba(77,163,255,.4);}
+
+.fav-btn{background:none; border:none; padding:0 4px; font-size:22px; line-height:1; cursor:pointer;
+  color:var(--muted); transition:color .15s, transform .15s; -webkit-tap-highlight-color:transparent;}
+.fav-btn:hover{ color:var(--star); transform:scale(1.15); }
+.fav-btn.on{ color:var(--star); }
+.fav-btn.on:hover{ color:var(--star); }
+.player .fav-btn{ font-size:24px; }
+table.wikitable .fav-btn{ font-size:18px; vertical-align:middle; margin-right:4px; }
+
+.player .now{font-size:14px; margin-top:10px; min-height:1.4em; line-height:1.4;}
+.player .now .np-label{ font-weight:700; color:var(--accent); }
+.player .now .np-title{ font-style:italic; color:var(--text); }
+.player .now .np-none{ font-weight:600; color:var(--red); }
+.player audio{width:100%;margin-top:8px}
+.player .under-buttons{display:flex; flex-direction:column; gap:8px; margin-top:12px;}
+.player .under-buttons .btn-row{display:flex; gap:8px; width:100%;}
+.player .under-buttons a{
+  flex:1 1 0; width:100%; text-align:center; font-size:14px;padding:9px 12px;border-radius:8px;
+  background:var(--panel2);color:var(--text); border:1px solid var(--border);
+  text-decoration:none;font-weight:400; cursor:pointer;}
+.player .under-buttons a:hover{border-color:var(--accent);color:var(--accent)}
+.player .under-buttons a.missing{color:var(--red);border-color:rgba(239,68,68,.4);
+  background:rgba(239,68,68,.1); cursor:not-allowed;}
+
+.player .streams{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));
+  gap:8px;
+  width:100%;
+}
+.player .under-buttons .streams button{
+  width:100%;
+  text-align:center;
+  font-size:13px;
+  padding:9px 8px;
+  border-radius:8px;
+  background:var(--panel2);
+  color:var(--text);
+  border:1px solid var(--border);
+  cursor:pointer;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.player .under-buttons .streams button:hover{border-color:var(--accent);color:var(--accent)}
+.player .streams button.active,
+.player .streams button.active:hover,
+.player .streams button.active:focus{
+  background:var(--accent) !important; color:#fff !important;
+  border-color:var(--accent) !important; -webkit-text-fill-color:#fff !important;
+  opacity:1 !important;}
+@media (hover:none){
+  .player .under-buttons .streams button:hover{border-color:var(--border);color:var(--text)}
+  .player .streams button.active:hover,
+  .player .streams button.active:focus{
+    background:var(--accent) !important;color:#fff !important;
+    border-color:var(--accent) !important; -webkit-text-fill-color:#fff !important;}
+}
+.player .btn-edit-full{display:block; width:100%; text-align:center; font-size:14px;padding:9px 12px;
+  border-radius:8px; background:var(--panel2);color:var(--text); border:1px solid var(--border);
+  cursor:pointer; font-weight:400;}
+.player .btn-edit-full:hover{border-color:var(--accent);color:var(--accent)}
+
+.search-section{margin:4px 0 12px}
+.search-section h3{font-size:16px;font-weight:700;margin:0 0 6px 0;}
+.search-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.search-wrap{position:relative; flex:1; min-width:150px;}
+.search{width:100%; padding:9px 36px 9px 9px; border-radius:8px; border:1px solid var(--border);
+  background:var(--panel); color:var(--text); font-size:14px;}
+.search-clear{position:absolute; top:50%; right:6px; transform:translateY(-50%);
+  width:24px; height:24px; border-radius:50%; border:none; background:transparent;
+  color:var(--muted); font-size:16px; line-height:1; cursor:pointer; display:none;
+  align-items:center; justify-content:center; padding:0; -webkit-tap-highlight-color:transparent;}
+.search-clear.visible{ display:flex; }
+.search-clear:hover{color:var(--red); background:rgba(239,68,68,.12);}
+.search-info{font-size:14px;color:var(--muted);margin-top:6px;min-height:1em}
+.search-info b{color:var(--accent)}
+
+.filter-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+.filter-row button{flex:1 1 0; min-width:120px; padding:9px 14px; border-radius:8px;
+  font-size:14px; background:var(--panel); color:var(--text); border:1px solid var(--border);
+  cursor:pointer; white-space:nowrap;}
+.filter-row button:hover{border-color:var(--accent);color:var(--accent)}
+#btn-fav-filter.on{background:rgba(250,204,21,.15); color:var(--star); border-color:var(--star); font-weight:600;}
+#btn-all-stations.on{background:rgba(77,163,255,.15); color:var(--accent); border-color:var(--accent); font-weight:600;}
+
+button{background:var(--panel2);color:var(--text);border:1px solid var(--border);
+  border-radius:8px;padding:8px 12px;cursor:pointer;font-size:14px;}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.danger{background:rgba(239,68,68,.15);color:var(--red);border-color:rgba(239,68,68,.4)}
+
+.table-wrap{overflow-x:auto; border:1px solid var(--wiki-border); border-radius:2px;
+  -webkit-overflow-scrolling:touch; display:none; background:var(--wiki-bg); margin-bottom:12px;}
+.table-wrap.visible{display:block;}
+
+table.wikitable{border-collapse:collapse; width:100%; font-size:13px;
+  font-family:system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color:var(--text); background:var(--wiki-bg); border:1px solid var(--wiki-border);}
+
+table.wikitable > thead > tr > th{background:var(--wiki-header); color:var(--text);
+  border:1px solid var(--wiki-border); padding:8px 10px; text-align:left;
+  font-weight:700; font-size:13px; vertical-align:top;}
+table.wikitable > thead > tr > th:first-child{width:28%; min-width:140px;}
+table.wikitable > thead > tr > th:last-child{width:72%;}
+
+table.wikitable > tbody > tr > td{background:var(--wiki-bg); border:1px solid var(--wiki-border);
+  padding:7px 10px; vertical-align:top; line-height:1.4; font-size:13px;}
+
+table.wikitable > tbody > tr > td:first-child{font-weight:600; color:var(--text);
+  background:var(--wiki-header); white-space:nowrap;}
+
+table.wikitable > tbody > tr > td:last-child{color:var(--text);}
+
+table.wikitable > tbody > tr:nth-child(even) > td:last-child{background:var(--wiki-row-alt);}
+
+table.wikitable > tbody > tr:hover > td:last-child{background:rgba(77,163,255,.08);}
+
+table.wikitable > tbody > tr.station-group-start > td{border-top:2px solid var(--accent);}
+
+table.wikitable a{color:var(--wiki-link); text-decoration:none;}
+table.wikitable a:hover{text-decoration:underline;}
+
+table.wikitable mark{background:#facc15; color:#111; padding:0 2px; border-radius:2px; font-weight:600;}
+html[data-theme="light"] table.wikitable mark{background:#fde047; color:#111;}
+
+table.wikitable .call-cell{cursor:pointer;}
+table.wikitable .call-cell strong{font-size:15px; font-weight:700; white-space:nowrap;}
+table.wikitable .call-cell:hover strong{color:var(--accent); text-decoration:underline;}
+
+table.wikitable .freq-cell .freq-text{font-size:14px; font-weight:600;}
+
+.status-dot{display:inline-block; width:9px; height:9px; border-radius:50%;
+  margin-right:6px; vertical-align:middle;}
+.dot-on{background:var(--green)}
+.dot-off{background:var(--red)}
+.dot-unknown{background:var(--muted)}
+
+table.wikitable .url-list{display:flex; flex-direction:column; gap:4px;}
+table.wikitable .url-list a{word-break:break-all; font-size:12px;}
+
+table.wikitable .actions{display:flex; gap:6px; flex-wrap:wrap;}
+table.wikitable .actions button{padding:4px 9px; font-size:12px; border-radius:4px; min-width:60px;}
+
+table.wikitable tr.compact-last > td{border-bottom:2px solid var(--accent);}
+
+table.wikitable tr.station-separator > td{
+  padding: 14px 16px !important; font-weight: 800; font-size: 16px; letter-spacing: .02em;
+  line-height: 1.3; white-space: normal; word-break: break-word; text-align: left;
+  vertical-align: middle; cursor: pointer;
+  border-top: 3px solid var(--sep1-bd) !important;
+  border-bottom: 3px solid var(--sep1-bd) !important;}
+table.wikitable tr.station-separator:hover > td{filter: brightness(1.12);}
+table.wikitable tr.station-separator .sep-num{display: inline-block; min-width: 2.6em;
+  margin-right: 8px; padding: 2px 8px; border-radius: 6px; background: rgba(0,0,0,.18);
+  font-variant-numeric: tabular-nums; font-weight: 800;}
+html[data-theme="light"] table.wikitable tr.station-separator .sep-num{background: rgba(255,255,255,.6);}
+table.wikitable tr.station-separator .sep-name{font-size: 16px;}
+table.wikitable tr.station-separator .sep-freq{display: inline-block; margin-left: 10px;
+  font-size: 13px; font-weight: 600; opacity: .8;}
+
+table.wikitable tr.station-separator.sep-c1 > td{ background: var(--sep1-bg); color: var(--sep1-fg); border-top-color: var(--sep1-bd) !important; border-bottom-color: var(--sep1-bd) !important; }
+table.wikitable tr.station-separator.sep-c2 > td{ background: var(--sep2-bg); color: var(--sep2-fg); border-top-color: var(--sep2-bd) !important; border-bottom-color: var(--sep2-bd) !important; }
+table.wikitable tr.station-separator.sep-c3 > td{ background: var(--sep3-bg); color: var(--sep3-fg); border-top-color: var(--sep3-bd) !important; border-bottom-color: var(--sep3-bd) !important; }
+table.wikitable tr.station-separator.sep-c4 > td{ background: var(--sep4-bg); color: var(--sep4-fg); border-top-color: var(--sep4-bd) !important; border-bottom-color: var(--sep4-bd) !important; }
+table.wikitable tr.station-separator.sep-c5 > td{ background: var(--sep5-bg); color: var(--sep5-fg); border-top-color: var(--sep5-bd) !important; border-bottom-color: var(--sep5-bd) !important; }
+table.wikitable tr.station-separator.sep-c6 > td{ background: var(--sep6-bg); color: var(--sep6-fg); border-top-color: var(--sep6-bd) !important; border-bottom-color: var(--sep6-bd) !important; }
+
+table.wikitable tr.compact-aff > td:last-child{font-size: 12.5px;}
+
+table.wikitable .call-cell strong{ cursor:pointer; }
+table.wikitable .call-cell strong:hover{ color:var(--accent); text-decoration:underline; }
+
+.pager{display:flex; gap:8px; align-items:center; justify-content:center;
+  margin:14px 0 4px; flex-wrap:wrap;}
+.pager button{padding:8px 14px;font-size:14px}
+.pager button:disabled{opacity:.4;cursor:not-allowed}
+.pager .page-info{font-size:14px;color:var(--muted)}
+.pager .page-info b{color:var(--text)}
+
+.empty{text-align:center; color:var(--muted); padding:30px; font-style:italic;}
+
+.modal-bg{position:fixed;inset:0;background:var(--shadow);display:none;
+  align-items:center;justify-content:center;padding:12px;z-index:50;}
+.modal-bg.open{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:14px;
+  padding:16px;width:100%;max-width:520px;max-height:90vh;overflow:auto;-webkit-overflow-scrolling:touch;}
+.modal h2{margin:0 0 12px;font-size:16px}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+.field input,.field textarea{width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);
+  background:var(--bg);color:var(--text);font-size:14px;font-family:inherit;}
+.field textarea{resize:vertical;min-height:60px}
+#f-info{ min-height:80px; }
+#f-aff{ min-height:110px; }
+
+.modal-actions{display:flex;gap:10px;margin-top:14px;}
+.modal-actions button{
+  flex:1 1 0;
+  width:50%;
+  padding:10px 12px;
+  font-size:15px;
+  font-weight:600;
+  border-radius:8px;
+  letter-spacing:.02em;
+}
+.modal-actions #btn-save{background:var(--accent); color:#fff; border-color:var(--accent);}
+.modal-actions #btn-save:hover{filter:brightness(1.08);}
+.modal-actions #btn-cancel:hover{border-color:var(--red); color:var(--red);}
+
+.checkbox-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.checkbox-row input[type=checkbox]{width:auto;margin:0}
+.checkbox-row label{margin:0;color:var(--text);font-size:14px}
+
+.dyn-row{display:flex; gap:6px; align-items:center; margin-bottom:6px;}
+.dyn-row .dyn-num{flex:0 0 auto; font-size:12px; color:var(--muted);
+  min-width:1.9em; text-align:right; font-variant-numeric:tabular-nums;}
+.dyn-row input{flex:1 1 auto; min-width:0; padding:8px;border-radius:8px;
+  border:1px solid var(--border); background:var(--bg); color:var(--text);
+  font-size:14px; font-family:inherit;}
+.dyn-row .rm-btn{flex:0 0 auto; background:transparent; border:1px solid var(--border);
+  color:var(--muted); border-radius:6px; width:30px; height:30px; padding:0;
+  cursor:pointer; font-size:16px; line-height:1; display:inline-flex;
+  align-items:center; justify-content:center;}
+.dyn-row .rm-btn:hover{color:var(--red); border-color:var(--red);}
+.btn-add-more{background:var(--panel2); color:var(--accent);
+  border:1px dashed var(--accent); border-radius:8px; padding:8px 12px;
+  width:100%; font-size:14px; cursor:pointer; margin-top:2px;}
+.btn-add-more:hover{background:rgba(77,163,255,.12);}
+
+#toast-single{
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+  z-index:9999; background:rgba(30,34,42,.94); color:#f0f4fa; padding:12px 20px;
+  border-radius:22px; font-size:14px; line-height:1.35; box-shadow:0 4px 18px rgba(0,0,0,.45);
+  backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.08); opacity:0;
+  pointer-events:none; text-align:center; word-break:break-word; max-width:90vw;
+  transition:opacity .25s ease, transform .25s ease;}
+html[data-theme="light"] #toast-single{background:rgba(40,44,52,.94); color:#f6f8fb; border-color:rgba(0,0,0,.12);}
+#toast-single.show{opacity:1; transform:translateX(-50%) translateY(0);}
+#toast-single.toast-warn{background:rgba(202,138,4,.94); color:#111;}
+#toast-single.toast-error{background:rgba(220,38,38,.94); color:#fff;}
+#toast-single.toast-success{background:rgba(22,163,74,.94); color:#fff;}
+
+#geo-block-notice{
+  position:fixed; bottom:76px; left:50%; transform:translateX(-50%) translateY(20px);
+  z-index:9998;
+  background:rgba(230,232,236,.97); color:#1a1f29;
+  padding:16px 28px;
+  border-radius:14px;
+  font-size:15px; line-height:1.4;
+  box-shadow:0 6px 24px rgba(0,0,0,.28);
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(0,0,0,.15);
+  opacity:0;
+  pointer-events:none; text-align:center;
+  min-width:min(560px, 92vw);
+  max-width:94vw;
+  word-break:break-word;
+  transition:opacity .3s ease, transform .3s ease;
+  font-weight:700;
+  letter-spacing:.01em;
+}
+html[data-theme="dark"] #geo-block-notice,
+html:not([data-theme="light"]) #geo-block-notice{
+  background:rgba(180,30,30,.96);
+  color:#fde047;
+  border:1px solid rgba(253,224,71,.45);
+  box-shadow:0 6px 24px rgba(120,10,10,.5);
+}
+#geo-block-notice.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+@media(max-width:600px){
+  .header-bar h2.title{font-size:17px}
+  .player .top-row img{max-height:160px}
+  .player .head .name{font-size:22px}
+  table.wikitable > thead > tr > th,
+  table.wikitable > tbody > tr > td{padding:6px 8px; font-size:12px;}
+  table.wikitable > thead > tr > th:first-child{width:34%; min-width:100px;}
+  table.wikitable .call-cell strong{font-size:13px}
+  table.wikitable .freq-cell .freq-text{font-size:12px}
+  table.wikitable tr.station-separator > td{ font-size:15px; padding:12px 12px !important; }
+  table.wikitable tr.station-separator .sep-name{ font-size:15px; }
+  .player .streams{grid-template-columns:repeat(auto-fill, minmax(120px, 1fr));}
+  #geo-block-notice{font-size:13.5px; padding:13px 18px; bottom:70px; min-width:92vw;}
+}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="brand">📻 Radio</div>
-  <div class="search-row">
-    <input id="q" type="search" placeholder="Search stations…" autocomplete="off">
+<div class="menu-overlay" id="menu-overlay"></div>
+<nav class="side-menu" id="side-menu" aria-label="Main menu">
+  <div class="menu-head">
+    <span class="menu-title">Menu</span>
+    <button class="close-x" id="menu-close" aria-label="Close menu">×</button>
   </div>
-  <div class="tabs">
-    <button class="tab active" data-tab="browse">Browse</button>
-    <button class="tab" data-tab="favs">Favorites</button>
-  </div>
-</header>
+  <button class="menu-item" id="m-theme">Dark / Light Mode</button>
+  <hr class="menu-hr">
+  <button class="menu-item" id="m-favs">⭐ Favorites</button>
+  <button class="menu-item" id="m-all">📻 All Stations</button>
+  <hr class="menu-hr">
+  <button class="menu-item" id="m-add">Add New Station</button>
+  <button class="menu-item" id="m-import">Import Database</button>
+  <button class="menu-item" id="m-export">Export Database</button>
+  <hr class="menu-hr">
+  <button class="menu-item danger" id="m-clear">Clear Database</button>
+</nav>
 
-<main>
-  <div id="banner" class="banner" hidden></div>
-  <div id="status" class="status" hidden></div>
-  <ul id="list"></ul>
-</main>
+<div class="header-bar">
+  <button class="hamburger" id="btn-menu" aria-label="Open menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <h2 class="title">Radio Stream Player</h2>
+  <span style="width:38px;flex:0 0 auto"></span>
+</div>
 
-<div id="player">
-  <img id="pLogo" class="logo" alt="">
-  <div class="info">
-    <div id="pName" class="name">Nothing playing</div>
-    <div id="pMeta" class="meta">Pick a station</div>
+<div class="player" id="player">
+  <div class="top-row">
+    <div class="head">
+      <div class="name-wrap">
+        <span class="name" id="p-name">No station selected</span>
+        <button class="fav-btn" id="p-fav" hidden title="Toggle favorite" aria-label="Toggle favorite">☆</button>
+      </div>
+    </div>
+    <img id="p-img" alt="station logo" src="">
+    <div class="head">
+      <div class="sub" id="p-sub"></div>
+      <div class="badges">
+        <span class="badge" id="p-type">-</span>
+        <span class="badge" id="p-status">-</span>
+      </div>
+    </div>
   </div>
-  <div class="controls">
-    <input id="vol" class="vol" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="Volume">
-    <button id="toggle" class="btn" aria-label="Play">▶</button>
+  <div class="now" id="p-now"></div>
+  <audio id="p-audio" controls preload="none"></audio>
+  <div class="under-buttons">
+    <div class="btn-row" id="p-link-row">
+      <a id="p-web" class="missing" href="#" target="_blank" rel="noopener">Website</a>
+      <a id="p-wiki" class="missing" href="#" target="_blank" rel="noopener">Wikipedia</a>
+    </div>
+    <div class="streams" id="p-streams"></div>
+    <button type="button" class="btn-edit-full" id="p-edit">Edit this Station</button>
   </div>
 </div>
 
-<audio id="audio" preload="none"></audio>
+<div class="search-section">
+  <h3>Search Database</h3>
+  <div class="search-row">
+    <div class="search-wrap">
+      <input id="search" class="search" placeholder=" 🔎 Search… ">
+      <button id="btn-search-clear" class="search-clear" type="button" aria-label="Clear search" title="Clear search">×</button>
+    </div>
+  </div>
+  <div class="search-info" id="search-info"></div>
+  <div class="filter-row">
+    <button id="btn-fav-filter" title="Show favorites only">☆ Favorites</button>
+    <button id="btn-all-stations" title="Show all stations (compact view)">📻 Show All Stations</button>
+  </div>
+</div>
+
+<input type="file" id="file-import" accept=".json,application/json" hidden>
+
+<div class="pager" id="pager-top" style="display:none;">
+  <button id="pg-prev-top">« Prev</button>
+  <span class="page-info" id="pg-info-top">Page <b>1</b> of <b>1</b></span>
+  <button id="pg-next-top">Next »</button>
+</div>
+
+<div class="table-wrap" id="table-wrap">
+  <table class="wikitable">
+    <thead>
+      <tr><th>Field</th><th>Value</th></tr>
+    </thead>
+    <tbody id="tbody">
+      <tr><td colspan="2" class="empty">No matches.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="pager" id="pager" style="display:none;">
+  <button id="pg-prev">« Prev</button>
+  <span class="page-info" id="pg-info">Page <b>1</b> of <b>1</b></span>
+  <button id="pg-next">Next »</button>
+</div>
+
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <h2 id="modal-title">Add station</h2>
+    <input type="hidden" id="f-id">
+    <div class="field"><label>Call letters</label><input id="f-call" placeholder="e.g. WABC"></div>
+    <div class="field"><label>Branding</label><input id="f-brand" placeholder="e.g. NewsRadio 820"></div>
+    <div class="field"><label>Frequency</label><input id="f-freq" placeholder="e.g. 820 AM / 670 FM"></div>
+    <div class="field"><label>Location</label><input id="f-loc" placeholder="City, Country"></div>
+    <div class="field"><label>Genre</label><input id="f-genre" placeholder="e.g. Talk, Jazz, Classic Rock"></div>
+
+    <div class="field">
+      <label>Stream URLs</label>
+      <div id="f-url-fields"></div>
+      <button type="button" class="btn-add-more" id="btn-add-url">+ Add another URL</button>
+    </div>
+
+    <div class="field"><label>Webcast 1</label><input id="f-webcast1" placeholder="https://example.com/listen-live"></div>
+    <div class="field"><label>Webcast 2 (optional)</label><input id="f-webcast2" placeholder="https://example.com/listen-live-alt"></div>
+    <div class="field"><label>Webcast 3 (optional)</label><input id="f-webcast3" placeholder="https://example.com/listen-live-third"></div>
+    <div class="field"><label>Website</label><input id="f-web" placeholder="https://..."></div>
+    <div class="field"><label>Wikipedia</label><input id="f-wiki" placeholder="https://..."></div>
+    <div class="field"><label>Logo image URL (optional)</label><input id="f-img" placeholder="https://... or data:image/svg+xml,..."></div>
+    <div class="field"><label>Logo image dark URL (optional)</label><input id="f-img-dark" placeholder="https://... or data:image/svg+xml,..."></div>
+    <div class="field"><label>Station information</label><textarea id="f-info" rows="4" placeholder="Format, owner, notes..."></textarea></div>
+    <div class="field"><label>Affiliations (comma-separated or one per line)</label><textarea id="f-aff" rows="6" placeholder="e.g. NBC, CBS, ABC, Fox&#10;or&#10;NBC&#10;CBS&#10;ABC&#10;Fox"></textarea></div>
+
+    <div class="field">
+      <label>Additional Information</label>
+      <div id="f-flag-fields"></div>
+      <button type="button" class="btn-add-more" id="btn-add-flag">+ Add another item</button>
+    </div>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="f-fav">
+      <label for="f-fav">⭐ Mark as favorite</label>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="f-geoblocked">
+      <label for="f-geoblocked">🚫 Geo-blocked/Blacked-out During Game Broadcasts</label>
+    </div>
+    <div class="modal-actions">
+      <button id="btn-cancel">Cancel</button>
+      <button class="primary" id="btn-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-single" role="status" aria-live="polite"></div>
+<div id="geo-block-notice" role="alert" aria-live="assertive"></div>
 
 <script>
-(() => {
-  'use strict';
+(function(){
+"use strict";
 
-  const API = 'https://all.api.radio-browser.info/json';
-  // CHANGE THIS TO INCLUDE YOUR EMAIL OR USERNAME
-  const UA = 'MyRadioPlayer/1.0 (yourname@example.com)'; 
+function el(id){ return document.getElementById(id); }
+function uid(){ return 'st_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-  const $ = (id) => document.getElementById(id);
-  const audio = $('audio');
-  const list = $('list');
-  const statusEl = $('status');
-  const banner = $('banner');
-  const toggleBtn = $('toggle');
-  const vol = $('vol');
-  const pName = $('pName');
-  const pMeta = $('pMeta');
-  const pLogo = $('pLogo');
+var LS_KEY='radio_db_v1', LS_CURRENT='radio_current_id', LS_THEME='radio_theme';
 
-  const state = { tab: 'browse', stations: [], favorites: loadFavorites(), current: null };
+/* ============================================================
+   CORS PROXY CONFIGURATION
+   ============================================================ */
+var MY_CLOUDFLARE_WORKER = 'https://radio-proxy.harrymoreno853.workers.dev';
+var MY_DENO_DEPLOY       = 'https://radio-proxy.callahan-2026.deno.net';
 
-  function loadFavorites() {
-    try { return JSON.parse(localStorage.getItem('favorites') || '[]'); } catch { return []; }
-  }
-  function saveFavorites() {
-    try { localStorage.setItem('favorites', JSON.stringify(state.favorites)); } catch {}
-  }
-  function isFav(uuid) { return state.favorites.some(s => s.stationuuid === uuid); }
-  function toggleFav(station) {
-    if (isFav(station.stationuuid)) {
-      state.favorites = state.favorites.filter(s => s.stationuuid !== station.stationuuid);
-    } else {
-      state.favorites.push(minify(station));
+var CORS_PROXIES = [];
+
+// 1. Cloudflare Worker (preferred — unlimited egress)
+if(MY_CLOUDFLARE_WORKER && MY_CLOUDFLARE_WORKER.indexOf('YOUR-') === -1){
+  CORS_PROXIES.push(function(u){
+    return MY_CLOUDFLARE_WORKER + '/?url=' + encodeURIComponent(u);
+  });
+}
+
+// 2. Deno Deploy (second — 1 GB/day egress)
+if(MY_DENO_DEPLOY && MY_DENO_DEPLOY.indexOf('YOUR-') === -1){
+  CORS_PROXIES.push(function(u){
+    return MY_DENO_DEPLOY + '/?url=' + encodeURIComponent(u);
+  });
+}
+
+// 3-5. Public fallbacks (last resort — rate-limited)
+CORS_PROXIES.push(function(u){ return 'https://corsproxy.io/?url=' + encodeURIComponent(u); });
+CORS_PROXIES.push(function(u){ return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u); });
+CORS_PROXIES.push(function(u){ return 'https://cors.eu.org/' + u; });
+
+/* ============================================================
+   HOSTS THAT DO NOT SUPPORT HTTPS
+   ============================================================ */
+var HTTP_ONLY_HOSTS = [
+  'crystalout.surfernetwork.com',
+  's3.nexuscast.com',
+  'www.streamcontrol.net',
+  'streamcontrol.net',
+  'ophanim.net',
+  '107.182.234.197',
+  's28.myradiostream.com',
+  'quincy.torontocast.com',
+  'us9.maindigitalstream.com',
+  'us7.maindigitalstream.com',
+  'rcast.net',
+  'free.rcast.net',
+  'stream.rcast.net'
+];
+
+function isKnownHttpOnly(url){
+  try{
+    var host = new URL(url).hostname.toLowerCase();
+    for(var i=0;i<HTTP_ONLY_HOSTS.length;i++){
+      var h = HTTP_ONLY_HOSTS[i];
+      if(host === h || host.endsWith('.' + h)) return true;
     }
-    saveFavorites();
-    render();
-  }
-  function minify(s) {
-    return {
-      stationuuid: s.stationuuid, name: s.name,
-      url_resolved: s.url_resolved, favicon: s.favicon || '',
-      country: s.country || '', codec: s.codec || '', bitrate: s.bitrate || 0,
-    };
-  }
+  }catch(e){}
+  return false;
+}
 
-  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* ============================================================
+   STALE URL PARAM STRIPPING
+   ============================================================ */
+function stripStaleParams(url){
+  try{
+    var u = new URL(url);
+    ['startTime', 'starttime', 'start_time'].forEach(function(k){
+      if(u.searchParams.has(k)) u.searchParams.delete(k);
+    });
+    return u.toString();
+  }catch(e){ return url; }
+}
 
-  function showStatus(msg) {
-    if (!msg) { statusEl.hidden = true; statusEl.textContent = ''; return; }
-    statusEl.hidden = false; statusEl.textContent = msg;
-  }
-  function showBanner(msg) {
-    if (!msg) { banner.hidden = true; banner.textContent = ''; return; }
-    banner.hidden = false; banner.textContent = msg;
-  }
+/* ---------- Theme ---------- */
+var themeChangeCallbacks = [];
 
-  async function apiFetch(path, params = {}) {
-    const url = new URL(API + path);
-    for (const [k, v] of Object.entries(params)) {
-      if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  try{ localStorage.setItem(LS_THEME, t); }catch(e){}
+  themeChangeCallbacks.forEach(function(cb){ try{ cb(t); }catch(e){} });
+}
+function initTheme(){
+  var t='dark';
+  try{
+    var saved=localStorage.getItem(LS_THEME);
+    if(saved==='light'||saved==='dark') t=saved;
+    else if(window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches) t='light';
+  }catch(e){}
+  applyTheme(t);
+}
+initTheme();
+
+function loadDB(){
+  try{ var raw=localStorage.getItem(LS_KEY); return raw?JSON.parse(raw):[]; }
+  catch(e){ console.warn('DB parse error', e); return []; }
+}
+
+function saveDB(db){
+  try{
+    localStorage.setItem(LS_KEY, JSON.stringify(db));
+    return true;
+  }catch(e){
+    if(e && (e.name === 'QuotaExceededError' || e.code === 22 || e.code === 1014)){
+      if(typeof alert === 'function'){
+        alert('⚠️ Storage limit reached.\n\nThe database is too large to save in this browser.\n\nPlease delete some stations or export your database and clear it.');
+      }
+      return false;
     }
-    const res = await fetch(url, { headers: { 'User-Agent': UA } });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return res.json();
+    console.error('saveDB failed:', e);
+    return false;
   }
+}
 
-  async function loadBrowse(query = '') {
-    showStatus('Loading stations…');
-    try {
-      const data = await apiFetch('/stations/search', {
-        hidebroken: 'true', is_https: 'true', limit: 60,
-        order: 'clickcount', reverse: 'true', name: query || undefined,
-      });
-      state.stations = data.map(minify);
-      showStatus(data.length ? '' : 'No stations found.');
-    } catch (e) {
-      console.error(e);
-      state.stations = [];
-      showStatus('Could not load stations. Check connection.');
-    } finally {
-      render();
+function sortStations(list){
+  return list.slice().sort(function(a,b){
+    var A=(a.call||'').trim().toUpperCase(), B=(b.call||'').trim().toUpperCase();
+    if(A && !B) return -1; if(!A && B) return 1;
+    return A.localeCompare(B, undefined, {sensitivity:'base'});
+  });
+}
+
+var DB = sortStations(loadDB());
+saveDB(DB);
+
+var CURRENT_ID = null;
+try{ CURRENT_ID = localStorage.getItem(LS_CURRENT) || null; }catch(e){}
+
+/* ---------- TOAST ---------- */
+var toastEl = el('toast-single');
+var toastTimer = null, toastFadeTimer = null;
+var TOAST_FADE_MS = 300;
+var toastQueue = [];
+var toastActive = false;
+var toastOnDrainCallback = null;
+var TOAST_DEFAULT_MS = 1800;
+
+function showToast(message, type, duration){
+  if(!toastEl) return;
+  toastQueue.push({message:message, type:type, duration:duration});
+  if(!toastActive) processToastQueue();
+}
+
+function processToastQueue(){
+  if(!toastEl) return;
+  if(toastQueue.length === 0){
+    toastActive = false;
+    if(toastOnDrainCallback){
+      var cb = toastOnDrainCallback;
+      toastOnDrainCallback = null;
+      cb();
+    }
+    return;
+  }
+  toastActive = true;
+  var job = toastQueue.shift();
+  if(toastTimer){ clearTimeout(toastTimer); toastTimer=null; }
+  if(toastFadeTimer){ clearTimeout(toastFadeTimer); toastFadeTimer=null; }
+
+  toastEl.textContent = job.message;
+  toastEl.className = 'toast' + (job.type ? ' toast-' + job.type : '');
+  void toastEl.offsetWidth;
+  toastEl.classList.add('show');
+
+  var ms = job.duration || TOAST_DEFAULT_MS;
+  toastTimer = setTimeout(function(){
+    toastEl.classList.remove('show');
+    toastFadeTimer = setTimeout(function(){
+      if(!toastEl.classList.contains('show')) toastEl.textContent='';
+      processToastQueue();
+    }, TOAST_FADE_MS);
+  }, ms);
+}
+
+function whenToastsDrained(callback){
+  if(!toastActive && toastQueue.length === 0){
+    callback();
+    return;
+  }
+  toastOnDrainCallback = callback;
+}
+
+window.__showToast = showToast;
+window.__whenToastsDrained = whenToastsDrained;
+
+/* ---------- GEO-BLOCK NOTIFICATION ---------- */
+var geoBlockEl = el('geo-block-notice');
+var geoBlockTimer = null;
+var geoBlockFadeTimer = null;
+var GEO_BLOCK_MS = 5000;
+var GEO_BLOCK_FADE_MS = 300;
+
+function showGeoBlockNoticeNow(){
+  if(!geoBlockEl) return;
+  if(geoBlockTimer){ clearTimeout(geoBlockTimer); geoBlockTimer=null; }
+  if(geoBlockFadeTimer){ clearTimeout(geoBlockFadeTimer); geoBlockFadeTimer=null; }
+  geoBlockEl.textContent = '🚫 Geo-blocked/Blacked-out During Game Broadcasts!';
+  geoBlockEl.classList.add('show');
+  geoBlockTimer = setTimeout(function(){
+    geoBlockEl.classList.remove('show');
+    geoBlockFadeTimer = setTimeout(function(){
+      if(!geoBlockEl.classList.contains('show')) geoBlockEl.textContent='';
+    }, GEO_BLOCK_FADE_MS);
+  }, GEO_BLOCK_MS);
+}
+
+function showGeoBlockNotice(){
+  whenToastsDrained(function(){
+    showGeoBlockNoticeNow();
+  });
+}
+window.__showGeoBlockNotice = showGeoBlockNotice;
+
+function detectType(url){
+  var u=(url||'').toLowerCase().split('?')[0];
+  if(u.endsWith('.m3u8')) return 'HLS (m3u8)';
+  if(u.endsWith('.mpd')) return 'DASH';
+  if(u.endsWith('.m3u')) return 'M3U';
+  if(u.endsWith('.aac')||u.endsWith('.aacp')) return 'AAC';
+  if(u.endsWith('.mp3')) return 'MP3';
+  if(u.endsWith('.ogg')||u.endsWith('.oga')) return 'OGG';
+  if(u.endsWith('.opus')) return 'OPUS';
+  if(u.endsWith('.flac')) return 'FLAC';
+  if(u.endsWith('.wav')) return 'WAV';
+  if(u.indexOf('pls')!==-1) return 'PLS';
+  return 'Stream';
+}
+
+var DEFAULT_LOGO_CACHE=null;
+function defaultLogo(){
+  if(DEFAULT_LOGO_CACHE) return DEFAULT_LOGO_CACHE;
+  try{
+    var c=document.createElement('canvas'); c.width=440; c.height=200;
+    var ctx=c.getContext('2d');
+    ctx.fillStyle='#1b2029'; ctx.fillRect(0,0,440,200);
+    ctx.fillStyle='#4da3ff'; ctx.font='bold 48px sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('RADIO',220,100);
+    DEFAULT_LOGO_CACHE=c.toDataURL('image/png');
+  }catch(e){
+    DEFAULT_LOGO_CACHE='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+  }
+  return DEFAULT_LOGO_CACHE;
+}
+
+function sanitizeImageUrl(raw){
+  var v=String(raw==null?'':raw).trim(); if(!v) return '';
+  var lower=v.toLowerCase();
+  if(lower.indexOf('data:image/')===0){
+    v=v.replace(/\s+/g,'');
+    if(lower.indexOf('data:image/svg')===0){
+      v=v.replace(/%(?![0-9A-Fa-f]{2})/g,'%25');
+      v=v.replace(/#(?!.*?%23)/g,'%23');
+    }
+    return v;
+  }
+  if(/^https?:\/\//i.test(v)) return v;
+  if(v.indexOf('//')===0) return 'https:'+v;
+  try{ return new URL(v, window.location.href).href; }catch(e){ return ''; }
+}
+
+var P = {
+  img: el('p-img'), name: el('p-name'), sub: el('p-sub'),
+  now: el('p-now'), type: el('p-type'), status: el('p-status'),
+  streams: el('p-streams'), audio: el('p-audio'),
+  web: el('p-web'), wiki: el('p-wiki'), edit: el('p-edit'),
+  fav: el('p-fav'),
+  underButtons: document.querySelector('.under-buttons')
+};
+
+/* ---------- DUAL (LIGHT/DARK) LOGO HANDLING ---------- */
+var CURRENT_IMG = { light: '', dark: '' };
+
+function _applyImageForCurrentTheme(){
+  var theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  var raw = (theme === 'dark' && CURRENT_IMG.dark) ? CURRENT_IMG.dark : CURRENT_IMG.light;
+  var img = P.img;
+  var safe = sanitizeImageUrl(raw);
+  img.onerror = function(){ img.onerror = null; img.src = defaultLogo(); };
+  img.src = safe || defaultLogo();
+}
+
+function setPlayerImage(lightUrl, darkUrl){
+  CURRENT_IMG.light = lightUrl || '';
+  CURRENT_IMG.dark  = darkUrl  || '';
+  _applyImageForCurrentTheme();
+}
+
+themeChangeCallbacks.push(_applyImageForCurrentTheme);
+
+function renderSub(info){
+  var html='';
+  if(info.freq)  html += '<div class="info-line"><span class="label">Frequency:</span>'+esc(info.freq)+'</div>';
+  if(info.brand) html += '<div class="info-line"><span class="label">Branding:</span>'+esc(info.brand)+'</div>';
+  if(info.loc)   html += '<div class="info-line"><span class="label">Location:</span>'+esc(info.loc)+'</div>';
+  if(info.genre) html += '<div class="info-line"><span class="label">Genre:</span>'+esc(info.genre)+'</div>';
+  P.sub.innerHTML = html;
+}
+
+/* ---------- WEBCAST BUTTONS ---------- */
+var webcastRows = [];
+
+function clearWebcastRows(){
+  webcastRows.forEach(function(row){
+    if(row && row.parentNode) row.parentNode.removeChild(row);
+  });
+  webcastRows = [];
+}
+
+function setWebcastButtons(urls){
+  clearWebcastRows();
+  var linkRow = el('p-link-row');
+  if(!linkRow || !linkRow.parentNode) return;
+  var filtered = (urls || []).filter(Boolean);
+  var insertAfter = linkRow;
+  filtered.forEach(function(url, i){
+    var row = document.createElement('div');
+    row.className = 'btn-row';
+    var a = document.createElement('a');
+    a.id = 'p-webcast' + (i === 0 ? '' : (i+1));
+    a.textContent = 'Webcast' + (filtered.length > 1 ? ' ' + (i+1) : '');
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.href = url;
+    row.appendChild(a);
+    insertAfter.parentNode.insertBefore(row, insertAfter.nextSibling);
+    insertAfter = row;
+    webcastRows.push(row);
+  });
+}
+
+/* ---------- CONCURRENCY-LIMITED STREAM PROBE ---------- */
+var statusCache=new Map(), STATUS_TTL=60000;
+var probeQueue=[], probeActive=0, PROBE_MAX=3;
+
+function checkStreamOnline(url){
+  return new Promise(function(resolve){
+    if(!url) return resolve(false);
+    var cached=statusCache.get(url);
+    if(cached && Date.now()-cached.ts<STATUS_TTL) return resolve(cached.online);
+    probeQueue.push({url:url, resolve:resolve});
+    drainProbeQueue();
+  });
+}
+function drainProbeQueue(){
+  while(probeActive < PROBE_MAX && probeQueue.length){
+    var job=probeQueue.shift();
+    probeActive++;
+    runProbe(job.url).then(function(online){
+      statusCache.set(job.url,{online:online, ts:Date.now()});
+      job.resolve(online);
+    }).catch(function(){
+      statusCache.set(job.url,{online:false, ts:Date.now()});
+      job.resolve(false);
+    }).then(function(){
+      probeActive--;
+      drainProbeQueue();
+    });
+  }
+}
+function runProbe(url){
+  return new Promise(function(resolve){
+    var settled=false;
+    function finish(v){ if(settled) return; settled=true; resolve(v); }
+    var a=document.createElement('audio');
+    a.preload='none'; a.muted=true;
+    var timer=setTimeout(tryFetch,5000);
+    function cleanup(){
+      clearTimeout(timer);
+      try{ a.removeAttribute('src'); if(a.load) a.load(); }catch(e){}
+    }
+    a.addEventListener('canplay',function(){ cleanup(); finish(true); },{once:true});
+    a.addEventListener('loadedmetadata',function(){ cleanup(); finish(true); },{once:true});
+    a.addEventListener('error',function(){ cleanup(); tryFetch(); },{once:true});
+    try{ a.src=url; a.load(); }catch(e){ tryFetch(); }
+    function tryFetch(){
+      fetch(url,{method:'GET',mode:'no-cors',cache:'no-store'})
+        .then(function(){ finish(true); })
+        .catch(function(){ finish(false); });
+    }
+  });
+}
+
+/* ---------- STREAM URL RESOLVER ---------- */
+var RESOLVE_TTL = 5 * 60 * 1000;
+var resolveCache = new Map();
+
+var PAGE_IS_HTTPS = (function(){
+  try{ return window.location.protocol === 'https:'; }catch(e){ return false; }
+})();
+
+function isPlaylistText(text){
+  var t = (text || '').trim();
+  if(!t) return false;
+  var low = t.toLowerCase();
+  if(low.indexOf('[playlist]') !== -1) return true;
+  if(low.indexOf('#extm3u') !== -1) return true;
+  if(/^\s*file\d+\s*=/im.test(t)) return true;
+  var lines = t.split(/\r?\n/).filter(function(l){ return l.trim() && l.trim().charAt(0)!=='#'; });
+  if(lines.length && lines.every(function(l){ return /^https?:\/\//i.test(l.trim()); })){
+    return true;
+  }
+  return false;
+}
+
+function extractStreamFromPlaylist(text, baseUrl){
+  var t = String(text || '');
+  var lines = t.split(/\r?\n/);
+  var candidates = [];
+  for(var i=0;i<lines.length;i++){
+    var m = lines[i].match(/^\s*File\d+\s*=\s*(.+)$/i);
+    if(m) candidates.push(m[1].trim());
+  }
+  if(!candidates.length){
+    for(var j=0;j<lines.length;j++){
+      var ln = lines[j].trim();
+      if(!ln || ln.charAt(0) === '#') continue;
+      if(/^https?:\/\//i.test(ln)){ candidates.push(ln); break; }
     }
   }
+  if(!candidates.length) return null;
+  var pick = candidates[0];
+  try{ return new URL(pick, baseUrl).href; }catch(e){ return pick; }
+}
 
-  async function registerClick(uuid) {
-    try { await fetch(`${API}/url/${encodeURIComponent(uuid)}`, { headers: { 'User-Agent': UA } }); } catch {}
+function looksLikeAudioContentType(ct){
+  ct = (ct || '').toLowerCase();
+  return ct.indexOf('audio/') === 0 ||
+         ct.indexOf('application/ogg') === 0 ||
+         ct.indexOf('application/vnd.apple.mpegurl') === 0 ||
+         ct.indexOf('application/x-mpegurl') === 0 ||
+         ct.indexOf('application/dash+xml') === 0 ||
+         ct.indexOf('video/mp2t') === 0 ||
+         ct.indexOf('application/octet-stream') === 0;
+}
+
+function fetchResolved(url, proxyFn){
+  var target = proxyFn ? proxyFn(url) : url;
+  var ctrl = new AbortController();
+  var to = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 6000);
+  return fetch(target, {
+    method: 'GET',
+    redirect: 'follow',
+    signal: ctrl.signal,
+    cache: 'no-store',
+    headers: { 'Icy-MetaData': '1' }
+  }).then(function(res){
+    clearTimeout(to);
+    var ct = (res.headers.get('content-type') || '').toLowerCase();
+    var finalUrl = res.url || url;
+
+    if(looksLikeAudioContentType(ct)){
+      try{ res.body && res.body.cancel && res.body.cancel(); }catch(e){}
+      return finalUrl;
+    }
+
+    var reader = res.body && res.body.getReader ? res.body.getReader() : null;
+    if(!reader) return finalUrl;
+
+    return reader.read().then(function(r){
+      try{ reader.cancel(); }catch(e){}
+      if(r.done || !r.value) return finalUrl;
+      var txt = new TextDecoder('latin1').decode(r.value.slice(0, 4096));
+      if(isPlaylistText(txt)){
+        var s = extractStreamFromPlaylist(txt, finalUrl);
+        return s || finalUrl;
+      }
+      return finalUrl;
+    });
+  }).catch(function(err){
+    clearTimeout(to);
+    throw err;
+  });
+}
+
+function preferHttpsVariant(url){
+  if(!PAGE_IS_HTTPS) return url;
+  if(!/^http:\/\//i.test(url)) return url;
+  if(isKnownHttpOnly(url)) return url;             // don't rewrite known HTTP-only hosts
+  return url.replace(/^http:/i, 'https:');
+}
+
+function resolveStreamUrl(url){
+  if(!url) return Promise.resolve(null);
+
+  url = stripStaleParams(url);
+
+  var cached = resolveCache.get(url);
+  if(cached && Date.now() - cached.ts < RESOLVE_TTL){
+    return Promise.resolve(cached.direct);
   }
 
-  function render() {
-    const items = state.tab === 'browse' ? state.stations : state.favorites;
-    list.innerHTML = '';
-    if (!items.length) {
-      const li = document.createElement('li');
-      li.className = 'empty';
-      li.textContent = state.tab === 'favs' ? 'No favorites yet.' : 'Search for a station.';
-      list.appendChild(li);
+  var attempts = [];
+  var httpsUrl = preferHttpsVariant(url);
+
+  function pushAttempt(u, proxyFn){
+    if(!u) return;
+    attempts.push(function(){ return fetchResolved(u, proxyFn); });
+  }
+
+  pushAttempt(url, null);
+  if(httpsUrl !== url) pushAttempt(httpsUrl, null);
+
+  CORS_PROXIES.forEach(function(proxy){
+    pushAttempt(url, proxy);
+    if(httpsUrl !== url) pushAttempt(httpsUrl, proxy);
+  });
+
+  var chain = Promise.resolve(null);
+  attempts.forEach(function(fn){
+    chain = chain.then(function(direct){
+      if(direct) return direct;
+      return fn().catch(function(){ return null; });
+    });
+  });
+
+  return chain.then(function(direct){
+    direct = direct || url;
+    resolveCache.set(url, { direct: direct, ts: Date.now() });
+    return direct;
+  });
+}
+
+/* ---------- ICY METADATA ---------- */
+var META_REFRESH_MS=15000;
+var metaTimer=null, metaAbort=null, currentMetaUrl=null;
+var metaFallbackTimer=null, metaGotTitle=false;
+
+var nowAlternateTimer=null;
+var nowAlternatePhase=0;
+var nowStationNameForAlt=null;
+var nowHasIcy=false;
+
+var icyMetaintCache = new Map();
+
+function renderNowPlaying(title){
+  if(!P.now) return;
+  if(title){
+    P.now.innerHTML = '<span class="np-label">Now Playing:</span> <span class="np-title">'+esc(title)+'</span>';
+  }else{
+    P.now.innerHTML = '<span class="np-label">Now Playing:</span> <span class="np-none">No Information Available</span>';
+  }
+}
+function renderNowPlayingStation(stationName){
+  if(!P.now) return;
+  P.now.innerHTML = '<span class="np-label">Now Playing:</span> <span class="np-title">'+esc(stationName || 'No Information Available')+'</span>';
+}
+
+function stopAlternatingNowPlaying(){
+  if(nowAlternateTimer){ clearInterval(nowAlternateTimer); nowAlternateTimer=null; }
+  nowAlternatePhase=0;
+}
+
+function startAlternatingNowPlaying(stationName){
+  stopAlternatingNowPlaying();
+  nowStationNameForAlt = stationName || '';
+  nowHasIcy = false;
+  renderNowPlayingStation(nowStationNameForAlt);
+  nowAlternatePhase = 0;
+  nowAlternateTimer = setInterval(function(){
+    if(nowHasIcy) return;
+    nowAlternatePhase = nowAlternatePhase === 0 ? 1 : 0;
+    if(nowAlternatePhase === 0){
+      renderNowPlayingStation(nowStationNameForAlt);
+    }else{
+      renderNowPlaying(null);
+    }
+  }, 6000);
+}
+
+function markIcyAvailable(title){
+  nowHasIcy = true;
+  stopAlternatingNowPlaying();
+  renderNowPlaying(title);
+}
+
+function clearFallbackTimer(){
+  if(metaFallbackTimer){ clearTimeout(metaFallbackTimer); metaFallbackTimer=null; }
+}
+function stopIcyMeta(){
+  if(metaTimer){ clearTimeout(metaTimer); metaTimer=null; }
+  if(metaAbort){ try{ metaAbort.abort(); }catch(e){} metaAbort=null; }
+  clearFallbackTimer();
+  stopAlternatingNowPlaying();
+  currentMetaUrl=null; metaGotTitle=false; nowHasIcy=false;
+  nowStationNameForAlt=null;
+  if(P.now) P.now.innerHTML='';
+}
+function startIcyMeta(url, stationName){
+  stopIcyMeta(); if(!url) return;
+  currentMetaUrl=url; metaGotTitle=false;
+  startAlternatingNowPlaying(stationName);
+
+  metaFallbackTimer=setTimeout(function(){
+    if(currentMetaUrl!==url) return;
+    if(!metaGotTitle && !nowHasIcy){
+      if(!nowAlternateTimer) startAlternatingNowPlaying(stationName);
+    }
+  }, 5000);
+
+  pollIcyOnce(url); scheduleNext(url);
+}
+function scheduleNext(url){
+  if(currentMetaUrl!==url) return;
+  metaTimer=setTimeout(function(){
+    if(currentMetaUrl!==url) return;
+    pollIcyOnce(url); scheduleNext(url);
+  }, META_REFRESH_MS);
+}
+function pollIcyOnce(url){
+  var t=detectType(url);
+  if(t.indexOf('HLS')===0 || t==='DASH'){
+    if(!nowAlternateTimer) startAlternatingNowPlaying(nowStationNameForAlt || P.name.textContent);
+    return;
+  }
+  var i=0;
+  function tryNext(){
+    if(i>=CORS_PROXIES.length) return;
+    var proxy=CORS_PROXIES[i++];
+    fetchIcyTitle(proxy(url), url).then(function(title){
+      if(title!==undefined && title!==null && title!==''){
+        if(currentMetaUrl===url){
+          metaGotTitle=true;
+          clearFallbackTimer();
+          markIcyAvailable(title);
+        }
+        return;
+      }
+      tryNext();
+    });
+  }
+  tryNext();
+}
+function fetchIcyTitle(proxiedUrl, originalUrl){
+  return new Promise(function(resolve){
+    metaAbort=new AbortController();
+    var signal=metaAbort.signal, reader=null;
+    fetch(proxiedUrl,{method:'GET',headers:{'Icy-MetaData':'1'},signal:signal,cache:'no-store'})
+    .then(function(res){
+      if(!res.ok || !res.body) return resolve(undefined);
+      reader=res.body.getReader();
+      var chunks=[], received=0;
+      var knownMetaInt = icyMetaintCache.get(originalUrl) || 0;
+      var maxBytes = knownMetaInt ? (knownMetaInt + 4096) : 32768;
+      function readLoop(){
+        if(received>=maxBytes){
+          var parsed=tryParseIcy(chunks, originalUrl);
+          if(reader){ try{ reader.cancel(); }catch(e){} }
+          return resolve(parsed===null?'':parsed);
+        }
+        reader.read().then(function(r){
+          if(r.done){
+            var parsed=tryParseIcy(chunks, originalUrl);
+            if(reader){ try{ reader.cancel(); }catch(e){} }
+            return resolve(parsed===null?'':parsed);
+          }
+          chunks.push(r.value); received+=r.value.length;
+          var parsed=tryParseIcy(chunks, originalUrl);
+          if(parsed!==null){ try{ reader.cancel(); }catch(e){} return resolve(parsed); }
+          readLoop();
+        }).catch(function(){ resolve(undefined); });
+      }
+      readLoop();
+    }).catch(function(){ resolve(undefined); });
+  });
+}
+function tryParseIcy(chunks, originalUrl){
+  if(!chunks.length) return null;
+  var total=0; for(var i=0;i<chunks.length;i++) total+=chunks[i].length;
+  var buf=new Uint8Array(total), off=0;
+  for(var j=0;j<chunks.length;j++){ buf.set(chunks[j],off); off+=chunks[j].length; }
+  var headerEnd=-1;
+  for(var k=0;k<buf.length-3;k++){
+    if(buf[k]===13 && buf[k+1]===10 && buf[k+2]===13 && buf[k+3]===10){ headerEnd=k+4; break; }
+  }
+  if(headerEnd<0) return null;
+  var headerText=new TextDecoder('latin1').decode(buf.slice(0,headerEnd));
+  var m=headerText.match(/icy-metaint:\s*(\d+)/i);
+  if(!m) return '';
+  var metaint=parseInt(m[1],10);
+  if(!metaint) return '';
+  if(originalUrl) icyMetaintCache.set(originalUrl, metaint);
+  var metaStart=headerEnd+metaint;
+  if(buf.length<=metaStart) return null;
+  var lenByte=buf[metaStart], metaLen=lenByte*16;
+  if(metaLen===0) return '';
+  if(buf.length<metaStart+1+metaLen) return null;
+  var metaBlock=buf.slice(metaStart+1,metaStart+1+metaLen);
+  var metaText=new TextDecoder('utf-8').decode(metaBlock).replace(/\0+$/g,'');
+  var tm=metaText.match(/StreamTitle='([^']*)'/i);
+  if(tm && tm[1]) return tm[1].trim();
+  return '';
+}
+
+/* ============================================================
+   MEDIA SESSION API
+   ============================================================ */
+function updateMediaSession(station){
+  if(!('mediaSession' in navigator)) return;
+  try{
+    var art = [];
+    var imgUrl = sanitizeImageUrl(station.img || '');
+    if(imgUrl){
+      art.push({ src: imgUrl, sizes: '512x512', type: 'image/png' });
+    }
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: station.call || 'Radio Stream',
+      artist: station.brand || station.freq || '',
+      album: station.loc || '',
+      artwork: art
+    });
+    navigator.mediaSession.setActionHandler('play', function(){
+      try{ P.audio.play(); }catch(e){}
+    });
+    navigator.mediaSession.setActionHandler('pause', function(){
+      try{ P.audio.pause(); }catch(e){}
+    });
+    navigator.mediaSession.setActionHandler('stop', function(){
+      try{ P.audio.pause(); P.audio.currentTime = 0; }catch(e){}
+    });
+  }catch(e){ console.warn('MediaSession error:', e); }
+}
+
+/* ============================================================
+   8-HOUR AUTO-RECOVERY
+   ============================================================ */
+var AUTO_RECOVERY_MS = 8 * 60 * 60 * 1000;
+var autoRecoveryTimer = null;
+var lastPlayStartTime = 0;
+
+function scheduleAutoRecovery(){
+  if(autoRecoveryTimer){ clearTimeout(autoRecoveryTimer); autoRecoveryTimer=null; }
+  if(!lastPlayStartTime) return;
+  var elapsed = Date.now() - lastPlayStartTime;
+  var remaining = AUTO_RECOVERY_MS - (elapsed % AUTO_RECOVERY_MS);
+  autoRecoveryTimer = setTimeout(performAutoRecovery, remaining);
+}
+
+function performAutoRecovery(){
+  if(!CURRENT_ID){ scheduleAutoRecovery(); return; }
+  var st = DB.find(function(s){ return s.id === CURRENT_ID; });
+  if(!st){ scheduleAutoRecovery(); return; }
+  var wasPlaying = !P.audio.paused;
+  if(!wasPlaying){ scheduleAutoRecovery(); return; }
+
+  console.info('[auto-recovery] 8h elapsed — flushing buffer and reconnecting');
+
+  try{
+    P.audio.pause();
+    P.audio.removeAttribute('src');
+    P.audio.load();
+    setTimeout(function(){
+      var urls = (st.urls || []).filter(Boolean).map(stripStaleParams);
+      if(!urls.length){ scheduleAutoRecovery(); return; }
+      stopIcyMeta();
+      var idx = urls.indexOf(activeStreamUrl);
+      if(idx < 0) idx = 0;
+      tryPlayUrls(urls, st.call || 'Radio Stream', idx);
+      lastPlayStartTime = Date.now();
+      scheduleAutoRecovery();
+      showToast('Auto-recovery: stream flushed and reconnected', 'success', 2500);
+    }, 500);
+  }catch(e){
+    console.warn('[auto-recovery] failed:', e);
+    scheduleAutoRecovery();
+  }
+}
+
+/* ---------- PLAYBACK ---------- */
+var hlsInstance=null, activeStreamUrl=null;
+
+function setPlayerLink(a,url,label){
+  if(url){
+    a.href=url; a.textContent=label; a.classList.remove('missing');
+    a.removeAttribute('aria-disabled'); a.style.pointerEvents='';
+  }else{
+    a.href='#'; a.textContent=label; a.classList.add('missing');
+    a.setAttribute('aria-disabled','true'); a.style.pointerEvents='none';
+  }
+}
+function renderStreamButtons(urls){
+  P.streams.innerHTML='';
+  urls.forEach(function(u,i){
+    var b=document.createElement('button');
+    b.type='button'; b.dataset.url=u;
+    b.textContent = (i+1) + '. ' + detectType(u);
+    b.title = u;
+    if(u===activeStreamUrl) b.classList.add('active');
+    P.streams.appendChild(b);
+  });
+}
+function stopAudio(){
+  try{ P.audio.pause(); }catch(e){}
+  if(hlsInstance){ try{ hlsInstance.destroy(); }catch(e){} hlsInstance=null; }
+  if(autoRecoveryTimer){ clearTimeout(autoRecoveryTimer); autoRecoveryTimer=null; }
+  lastPlayStartTime = 0;
+}
+function loadScript(src){
+  return new Promise(function(res,rej){
+    var s=document.createElement('script');
+    s.src=src; s.onload=res; s.onerror=rej;
+    document.head.appendChild(s);
+  });
+}
+function attachHLS(url){
+  var canNative=P.audio.canPlayType('application/vnd.apple.mpegurl');
+  if(canNative){ P.audio.src=url; return; }
+  if(!window.Hls){
+    loadScript('https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js')
+      .catch(function(){}).then(function(){ attachHLS(url); });
+    return;
+  }
+  if(window.Hls && window.Hls.isSupported()){
+    hlsInstance=new window.Hls({lowLatencyMode:true});
+    hlsInstance.loadSource(url); hlsInstance.attachMedia(P.audio);
+    hlsInstance.on(window.Hls.Events.ERROR,function(_,data){
+      if(data && data.fatal) console.warn('HLS fatal error',data);
+    });
+  }
+}
+
+var playAttemptToken = 0;
+
+var INTER_ATTEMPT_DELAY_MS = 400;
+var PER_STREAM_TIMEOUT_MS   = 7000;
+var SWEEP_BUDGET_MS         = 25000;
+
+function tryPlayUrls(urls, stationName, startIndex){
+  var token = ++playAttemptToken;
+  var index = startIndex || 0;
+  var total = urls ? urls.length : 0;
+  var sweepStart = Date.now();
+
+  if(urls){
+    urls = urls.map(stripStaleParams);
+  }
+
+  if(!urls || !total){
+    P.status.textContent='No streams';
+    P.status.className='badge offline';
+    P.now.innerHTML = '<span class="np-label">Now Playing:</span> <span class="np-none">No stream URLs available</span>';
+    showToast('This station has no stream URLs', 'error', 2500);
+    return;
+  }
+
+  var failedNums = [];
+  var startedIndex = index;
+
+  attemptNext();
+
+  function finishAllFailed(){
+    if(token !== playAttemptToken) return;
+    P.status.textContent='All streams failed';
+    P.status.className='badge offline';
+    P.now.innerHTML = '<span class="np-label">Now Playing:</span> <span class="np-none">Could not play any stream</span>';
+    var noun = total > 1 ? 'Streams' : 'Stream';
+    var msg;
+    if(failedNums.length){
+      msg = 'Could not Play ' + noun + ' ' + failedNums.join(', ') + '; All Streams Failed!';
+    }else{
+      msg = 'Could not Play ' + noun + ' 1-' + total + '; All Streams Failed!';
+    }
+    showToast(msg, 'error', 3000);
+  }
+
+  function attemptNext(){
+    if(token !== playAttemptToken) return;
+
+    if(Date.now() - sweepStart > SWEEP_BUDGET_MS){
+      finishAllFailed();
       return;
     }
-    const frag = document.createDocumentFragment();
-    for (const s of items) {
-      const li = document.createElement('li');
-      li.className = 'station' + (state.current && state.current.stationuuid === s.stationuuid ? ' active' : '');
-      const img = document.createElement('img');
-      img.className = 'logo'; img.loading = 'lazy'; img.alt = '';
-      if (s.favicon && /^https?:\/\//.test(s.favicon)) img.src = s.favicon;
-      img.onerror = () => { img.style.visibility = 'hidden'; };
-      const info = document.createElement('div');
-      info.className = 'info';
-      info.innerHTML = `<div class="name">${esc(s.name)}</div>
-        <div class="meta">${esc([s.country, s.codec, s.bitrate ? s.bitrate + 'k' : ''].filter(Boolean).join(' · '))}</div>`;
-      const fav = document.createElement('button');
-      fav.className = 'fav' + (isFav(s.stationuuid) ? ' on' : '');
-      fav.textContent = isFav(s.stationuuid) ? '★' : '☆';
-      fav.onclick = (e) => { e.stopPropagation(); toggleFav(s); };
-      li.append(img, info, fav);
-      li.onclick = () => playStation(s);
-      frag.appendChild(li);
-    }
-    list.appendChild(frag);
-  }
 
-  function playStation(s) {
-    showBanner('');
-    state.current = s;
-    pName.textContent = s.name;
-    pMeta.textContent = [s.country, s.codec].filter(Boolean).join(' · ') || 'Streaming';
-    pLogo.style.visibility = 'hidden';
-    if (s.favicon && /^https?:\/\//.test(s.favicon)) {
-      pLogo.src = s.favicon;
-      pLogo.onload = () => { pLogo.style.visibility = 'visible'; };
+    if(index >= total){
+      if(startedIndex > 0 && index >= total){
+        var earlier = false;
+        for(var k=0;k<startedIndex;k++){
+          if(!failedNums.includes(k+1)){
+            index = k;
+            earlier = true;
+            startedIndex = total;
+            break;
+          }
+        }
+        if(earlier){
+          attemptNext();
+          return;
+        }
+      }
+      finishAllFailed();
+      return;
     }
-    audio.src = s.url_resolved;
-    audio.play().catch(() => showBanner('Stream failed — try another station.'));
-    registerClick(s.stationuuid);
-    if ('mediaSession' in navigator) {
-      try {
-        navigator.mediaSession.metadata = new MediaMetadata({
-          title: s.name, artist: s.country || 'Radio',
-          artwork: s.favicon ? [{ src: s.favicon }] : []
+
+    var url = urls[index];
+    activeStreamUrl = url;
+    renderStreamButtons(urls);
+    P.streams.querySelectorAll('button').forEach(function(b){
+      b.classList.toggle('active', b.dataset.url === url);
+    });
+    var type = detectType(url);
+    P.type.textContent = type + (total > 1 ? ' · ' + total + ' streams' : '');
+    P.type.className = 'badge type';
+    P.status.textContent = 'Resolving ' + (index+1) + ' / ' + total + '…';
+    P.status.className = 'badge';
+
+    checkStreamOnline(url).then(function(online){
+      if(token !== playAttemptToken) return;
+      if(index < total && urls[index] === url &&
+         P.status.textContent.indexOf('Resolving') === 0){
+        P.status.textContent = online ? 'Online' : 'Offline';
+        P.status.className = 'badge ' + (online ? 'online' : 'offline');
+      }
+    });
+
+    stopAudio(); stopIcyMeta();
+
+    resolveStreamUrl(url).then(function(directUrl){
+      if(token !== playAttemptToken) return;
+      if(!directUrl){ onFail(); return; }
+
+      var playUrl = directUrl;
+      P.status.textContent = 'Trying ' + (index+1) + ' / ' + total + '…';
+      P.status.className = 'badge';
+
+      if(/\.m3u8(\?|$)/i.test(playUrl) || /mpegurl/i.test(playUrl)){
+        attachHLS(playUrl);
+        P.audio.src = playUrl;
+      }else{
+        P.audio.src = playUrl;
+      }
+      P.audio.load();
+
+      var playCheckTimer = null;
+      var settled = false;
+
+      function onSuccess(){
+        if(settled || token !== playAttemptToken) return;
+        settled = true;
+        cleanupListeners();
+
+        if(playUrl !== url){
+          resolveCache.set(url, { direct: playUrl, ts: Date.now() });
+        }
+
+        startIcyMeta(url, stationName);
+        lastPlayStartTime = Date.now();
+        scheduleAutoRecovery();
+
+        var station = DB.find(function(s){ return s.id === CURRENT_ID; });
+        if(station){
+          updateMediaSession(station);
+          if(station.geoblocked) showGeoBlockNotice();
+        }
+
+        var msg;
+        if(failedNums.length === 0){
+          msg = 'Playing Stream ' + (index+1) + ' of ' + total;
+        }else{
+          var failNoun = failedNums.length > 1 ? 'Streams' : 'Stream';
+          msg = 'Could not Play ' + failNoun + ' ' + failedNums.join(', ') +
+                '; Playing Stream ' + (index+1) + ' of ' + total;
+        }
+        showToast(msg, failedNums.length === 0 ? null : 'warn', 2500);
+      }
+
+      function onFail(){
+        if(settled || token !== playAttemptToken) return;
+        settled = true;
+        cleanupListeners();
+        console.warn('Stream ' + (index+1) + ' failed (resolved: ' + playUrl + ').');
+        var num = index + 1;
+        if(failedNums.indexOf(num) === -1) failedNums.push(num);
+        index++;
+        setTimeout(function(){
+          if(token !== playAttemptToken) return;
+          attemptNext();
+        }, INTER_ATTEMPT_DELAY_MS);
+      }
+
+      function cleanupListeners(){
+        if(playCheckTimer){ clearTimeout(playCheckTimer); playCheckTimer=null; }
+        P.audio.removeEventListener('canplay', onSuccess);
+        P.audio.removeEventListener('playing', onSuccess);
+        P.audio.removeEventListener('error', onFail);
+      }
+
+      P.audio.addEventListener('canplay', onSuccess, {once:true});
+      P.audio.addEventListener('playing', onSuccess, {once:true});
+      P.audio.addEventListener('error', onFail, {once:true});
+
+      var playPromise = P.audio.play();
+      if(playPromise && playPromise.catch){
+        playPromise.catch(function(err){
+          console.warn('play() rejected for stream ' + (index+1)+':', err && err.name);
+          onFail();
         });
-      } catch {}
-    }
-    document.title = `${s.name} — Radio`;
-    render();
+      }
+
+      playCheckTimer = setTimeout(function(){
+        if(settled || token !== playAttemptToken) return;
+        console.warn('Stream ' + (index+1) + ' timed out (resolved: ' + playUrl + ').');
+        onFail();
+      }, PER_STREAM_TIMEOUT_MS);
+    }).catch(function(){
+      if(token !== playAttemptToken) return;
+      onFail();
+    });
   }
+}
 
-  toggleBtn.onclick = () => {
-    if (!state.current) return;
-    if (audio.paused) audio.play().catch(() => showBanner('Playback failed.'));
-    else audio.pause();
-  };
+P.streams.addEventListener('click',function(e){
+  var b=e.target.closest('button');
+  if(!b || !b.dataset.url) return;
+  var st = DB.find(function(s){ return s.id === CURRENT_ID; }) || {};
+  var urls = (st.urls || []).filter(Boolean).map(stripStaleParams);
+  var idx = urls.indexOf(b.dataset.url);
+  if(idx < 0) idx = 0;
+  tryPlayUrls(urls, P.name.textContent, idx);
+});
+P.edit.addEventListener('click', function(){
+  var id = P.edit.dataset.id;
+  if(id) window.__openModal && window.__openModal(id);
+});
+P.fav.addEventListener('click', function(){
+  var id = this.dataset.id;
+  if(id && window.__toggleFav) window.__toggleFav(id);
+});
 
-  vol.oninput = () => { audio.volume = parseFloat(vol.value); };
-  audio.addEventListener('play', () => toggleBtn.textContent = '⏸');
-  audio.addEventListener('pause', () => toggleBtn.textContent = '▶');
-  audio.addEventListener('error', () => { if (state.current) showBanner('Stream error.'); });
-  audio.addEventListener('playing', () => showBanner(''));
+function updateFavButton(st){
+  if(!st){ P.fav.hidden=true; P.fav.dataset.id=''; return; }
+  P.fav.hidden=false;
+  P.fav.dataset.id=st.id;
+  P.fav.textContent = st.fav ? '★' : '☆';
+  P.fav.classList.toggle('on', !!st.fav);
+}
 
-  document.querySelectorAll('.tab').forEach((btn) => {
-    btn.onclick = () => {
-      document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b === btn));
-      state.tab = btn.dataset.tab;
-      render();
-    };
+function selectStation(id, autoPlayFirst){
+  var st=DB.find(function(s){ return s.id===id; });
+  if(!st) return;
+  CURRENT_ID=id;
+  try{ localStorage.setItem(LS_CURRENT,id); }catch(e){}
+  P.name.textContent=st.call||'(no call letters)';
+  renderSub({freq:st.freq, brand:st.brand, loc:st.loc, genre:st.genre});
+  setPlayerImage(st.img, st.imgDark);
+  setPlayerLink(P.web, st.web, 'Website');
+  setPlayerLink(P.wiki, st.wiki, 'Wikipedia');
+  setWebcastButtons([st.webcast, st.webcast2, st.webcast3]);
+  P.edit.dataset.id = st.id;
+  updateFavButton(st);
+  var urls=(st.urls||[]).filter(Boolean);
+  var primary=urls[0]||'';
+  P.type.textContent=detectType(primary) + (urls.length > 1 ? ' · ' + urls.length + ' streams' : '');
+  P.type.className='badge type';
+  P.status.textContent='Checking…'; P.status.className='badge';
+  checkStreamOnline(primary).then(function(online){
+    if(P.status.textContent === 'Checking…'){
+      P.status.textContent=online?'Online':'Offline';
+      P.status.className='badge '+(online?'online':'offline');
+    }
   });
+  activeStreamUrl=null;
+  renderStreamButtons(urls);
+  stopAudio(); stopIcyMeta();
+  try{ P.audio.removeAttribute('src'); P.audio.load(); }catch(e){}
+  if(autoPlayFirst && urls.length) tryPlayUrls(urls, P.name.textContent, 0);
+}
 
-  let debounce;
-  $('q').addEventListener('input', (e) => {
-    clearTimeout(debounce);
-    debounce = setTimeout(() => loadBrowse(e.target.value.trim()), 350);
-  });
+function resetPlayer(){
+  CURRENT_ID=null;
+  try{ localStorage.removeItem(LS_CURRENT); }catch(e){}
+  stopAudio(); stopIcyMeta();
+  P.name.textContent='No station selected';
+  P.sub.innerHTML='';
+  P.now.innerHTML='';
+  P.type.textContent='-'; P.type.className='badge';
+  P.status.textContent='-'; P.status.className='badge';
+  P.streams.innerHTML='';
+  P.edit.dataset.id='';
+  updateFavButton(null);
+  setPlayerImage('', '');
+  setPlayerLink(P.web,'','Website');
+  setPlayerLink(P.wiki,'','Wikipedia');
+  clearWebcastRows();
+  if('mediaSession' in navigator){
+    try{ navigator.mediaSession.metadata = null; }catch(e){}
+  }
+}
 
-  audio.volume = parseFloat(vol.value);
-  loadBrowse('');
+window.__RS = {
+  DB:function(){ return DB; },
+  setDB:function(v){ DB=v; },
+  el:el, uid:uid, esc:esc, applyTheme:applyTheme, saveDB:saveDB,
+  sortStations:sortStations, checkStreamOnline:checkStreamOnline,
+  selectStation:selectStation, resetPlayer:resetPlayer,
+  getCurrentId:function(){ return CURRENT_ID; },
+  setCurrentId:function(v){ CURRENT_ID=v; },
+  resolveStreamUrl:resolveStreamUrl,
+  CORS_PROXIES:CORS_PROXIES,
+  HTTP_ONLY_HOSTS:HTTP_ONLY_HOSTS,
+  isKnownHttpOnly:isKnownHttpOnly
+};
 })();
 </script>
 
+<script>
+(function(){
+"use strict";
+var RS = window.__RS;
+var el = RS.el, uid = RS.uid, esc = RS.esc, applyTheme = RS.applyTheme;
+var saveDB = RS.saveDB, sortStations = RS.sortStations;
+var checkStreamOnline = RS.checkStreamOnline;
+var selectStation = RS.selectStation, resetPlayer = RS.resetPlayer;
+
+var menuOverlay = el('menu-overlay');
+var sideMenu    = el('side-menu');
+var menuBtn     = el('btn-menu');
+function openMenu(){
+  menuOverlay.classList.add('open'); sideMenu.classList.add('open');
+  menuBtn.setAttribute('aria-expanded','true');
+}
+function closeMenu(){
+  menuOverlay.classList.remove('open'); sideMenu.classList.remove('open');
+  menuBtn.setAttribute('aria-expanded','false');
+}
+menuBtn.addEventListener('click', function(e){ e.stopPropagation(); openMenu(); });
+el('menu-close').addEventListener('click', closeMenu);
+menuOverlay.addEventListener('click', closeMenu);
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeMenu(); });
+
+el('m-theme').addEventListener('click', function(){
+  var cur = document.documentElement.getAttribute('data-theme');
+  applyTheme(cur==='light' ? 'dark' : 'light');
+});
+el('m-add').addEventListener('click', function(){ closeMenu(); openModal(); });
+el('m-import').addEventListener('click', function(){ closeMenu(); el('file-import').click(); });
+el('m-export').addEventListener('click', function(){ closeMenu(); exportDB(); });
+el('m-clear').addEventListener('click', function(){ closeMenu(); clearAll(); });
+el('m-favs').addEventListener('click', function(){
+  closeMenu(); viewMode='favorites'; searchTerm='';
+  searchInput.value=''; updateSearchClearBtn(); currentPage=1;
+  updateFilterButtons(); renderTable();
+});
+el('m-all').addEventListener('click', function(){
+  closeMenu(); viewMode='all'; searchTerm='';
+  searchInput.value=''; updateSearchClearBtn(); currentPage=1;
+  updateFilterButtons(); renderTable();
+});
+
+var tableWrap = el('table-wrap');
+var tbody = el('tbody');
+var searchInput = el('search');
+var searchClearBtn = el('btn-search-clear');
+var searchInfo = el('search-info');
+
+var pager = el('pager');
+var pgPrev = el('pg-prev');
+var pgNext = el('pg-next');
+var pgInfo = el('pg-info');
+
+var pagerTop = el('pager-top');
+var pgPrevTop = el('pg-prev-top');
+var pgNextTop = el('pg-next-top');
+var pgInfoTop = el('pg-info-top');
+
+var favFilterBtn = el('btn-fav-filter');
+var allStationsBtn = el('btn-all-stations');
+var PAGE_SIZE = 25;
+var searchTerm = '';
+var currentPage = 1;
+var viewMode = 'none';
+
+function updateSearchClearBtn(){
+  if(searchInput.value.length > 0) searchClearBtn.classList.add('visible');
+  else searchClearBtn.classList.remove('visible');
+}
+function updateFilterButtons(){
+  favFilterBtn.classList.toggle('on', viewMode === 'favorites');
+  favFilterBtn.textContent = (viewMode === 'favorites' ? '★' : '☆') + ' Favorites';
+  allStationsBtn.classList.toggle('on', viewMode === 'all');
+  allStationsBtn.textContent = '📻 Show All Stations';
+}
+updateFilterButtons();
+updateSearchClearBtn();
+
+favFilterBtn.addEventListener('click', function(){
+  viewMode = (viewMode === 'favorites') ? 'none' : 'favorites';
+  currentPage = 1; updateFilterButtons(); renderTable();
+});
+allStationsBtn.addEventListener('click', function(){
+  viewMode = (viewMode === 'all') ? 'none' : 'all';
+  currentPage = 1; updateFilterButtons(); renderTable();
+});
+
+var searchDebounce = null;
+searchInput.addEventListener('input', function(e){
+  updateSearchClearBtn();
+  if(searchDebounce) clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(function(){
+    searchTerm = e.target.value.trim();
+    currentPage = 1;
+    if(searchTerm) viewMode = 'search';
+    else if(viewMode === 'search') viewMode = 'none';
+    updateFilterButtons();
+    renderTable();
+  }, 200);
+});
+
+searchClearBtn.addEventListener('click', function(){
+  if(searchDebounce){ clearTimeout(searchDebounce); searchDebounce=null; }
+  searchInput.value=''; searchTerm=''; currentPage=1;
+  if(viewMode === 'search') viewMode='none';
+  updateSearchClearBtn(); updateFilterButtons(); renderTable();
+  searchInput.focus();
+});
+
+pgPrevTop.onclick = function(){ if(currentPage>1){ currentPage--; renderTable(); } };
+pgNextTop.onclick = function(){ currentPage++; renderTable(); };
+pgPrev.onclick = function(){ if(currentPage>1){ currentPage--; renderTable(); } };
+pgNext.onclick = function(){ currentPage++; renderTable(); };
+
+function getDB(){ return RS.DB(); }
+
+function filteredSorted(){
+  var list = getDB();
+  if(viewMode === 'favorites' && !searchTerm){
+    list = list.filter(function(s){ return !!s.fav; });
+  }
+  if(searchTerm){
+    var t = searchTerm.toLowerCase();
+    var base = (viewMode === 'favorites') ? list.filter(function(s){ return !!s.fav; }) : list;
+    list = base.filter(function(st){
+      var blob = [st.call,st.brand,st.freq,st.loc,st.genre,st.info,st.aff,st.web,st.wiki,st.webcast,st.webcast2,st.webcast3,(st.urls||[]).join(' '),(st.flags||[]).join(' ')]
+        .join(' ').toLowerCase();
+      return blob.indexOf(t) !== -1;
+    });
+  }
+  return sortStations(list);
+}
+
+function makeHighlighter(term){
+  if(!term) return function(text){ return esc(text); };
+  var safe = term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  var re = new RegExp('('+safe+')','gi');
+  return function(text){
+    var s = String(text==null?'':text);
+    if(!s) return '';
+    var parts = s.split(re);
+    var out = '';
+    for(var i=0;i<parts.length;i++){
+      if(i % 2 === 1) out += '<mark>'+esc(parts[i])+'</mark>';
+      else out += esc(parts[i]);
+    }
+    return out;
+  };
+}
+
+var SEP_COLOR_CLASSES = ['sep-c1','sep-c2','sep-c3','sep-c4','sep-c5','sep-c6'];
+function sepColorClass(i){ return SEP_COLOR_CLASSES[i % SEP_COLOR_CLASSES.length]; }
+
+function buildSeparatorRow(st, absoluteIndex, globalNumber){
+  var colorClass = sepColorClass(absoluteIndex);
+  var displayName = st.call || st.brand || st.freq || '(unnamed station)';
+  var freqPart = st.freq ? ' <span class="sep-freq">' + esc(st.freq) + '</span>' : '';
+  var numLabel = String(globalNumber).padStart(3, '0') + '.';
+  return '<tr class="station-separator ' + colorClass + '" data-id="' + st.id + '" data-play-sep="' + st.id + '">' +
+    '<td colspan="2">' +
+      '<span class="sep-num">' + numLabel + '</span>' +
+      '<span class="sep-name">' + esc(displayName) + '</span>' +
+      freqPart +
+    '</td></tr>';
+}
+
+function renderTable(){
+  var dbTotal = getDB().length;
+  var favTotal = getDB().filter(function(s){ return !!s.fav; }).length;
+  var needsView = (viewMode !== 'none') || !!searchTerm;
+
+  if(!needsView){
+    searchInfo.innerHTML = '<b>'+dbTotal+'</b> station'+(dbTotal===1?'':'s')+' in database · ' +
+      '<b>'+favTotal+'</b> favorite'+(favTotal===1?'':'s');
+    tableWrap.classList.remove('visible');
+    pager.style.display = 'none';
+    pagerTop.style.display = 'none';
+    tbody.innerHTML = '';
+    return;
+  }
+
+  var list = filteredSorted();
+  var total = list.length;
+  var compactMode = !searchTerm && (viewMode === 'favorites' || viewMode === 'all');
+
+  if(viewMode === 'favorites' && !searchTerm){
+    searchInfo.innerHTML = '<b>'+total+'</b> favorite'+(total===1?'':'s')+' (compact view)';
+  } else if(viewMode === 'all' && !searchTerm){
+    searchInfo.innerHTML = '<b>'+total+'</b> station'+(total===1?'':'s')+' (compact view)';
+  } else if(searchTerm && viewMode === 'favorites'){
+    searchInfo.innerHTML = '<b>'+total+'</b> favorite result'+(total===1?'':'s')+
+      ' for "<b>'+esc(searchTerm)+'</b>"';
+  } else {
+    searchInfo.innerHTML = '<b>'+total+'</b> result'+(total===1?'':'s')+
+      ' for "<b>'+esc(searchTerm)+'</b>"';
+  }
+
+  tableWrap.classList.add('visible');
+
+  if(!total){
+    tbody.innerHTML = '<tr><td colspan="2" class="empty">'+
+      (viewMode === 'favorites' ? 'No favorites yet. Tap a star ☆ to add one.' : 'No matches.')+
+      '</td></tr>';
+    pager.style.display = 'none';
+    pagerTop.style.display = 'none';
+    return;
+  }
+
+  var totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if(currentPage > totalPages) currentPage = totalPages;
+  if(currentPage < 1) currentPage = 1;
+  var start = (currentPage - 1) * PAGE_SIZE;
+  var pageItems = list.slice(start, start + PAGE_SIZE);
+
+  var hl = makeHighlighter(searchTerm);
+  var htmlParts = [];
+
+  pageItems.forEach(function(st, i){
+    var absoluteIndex = start + i;
+    var globalNumber = absoluteIndex + 1;
+
+    var urls = (st.urls||[]).filter(Boolean);
+    var urlsHtml = urls.length
+      ? '<div class="url-list">'+urls.map(function(u){
+          return '<a href="'+esc(u)+'" target="_blank" rel="noopener">'+hl(u)+'</a>';
+        }).join('')+'</div>'
+      : '<span style="color:var(--muted)">—</span>';
+    var webHtml = st.web ? '<a href="'+esc(st.web)+'" target="_blank" rel="noopener">'+hl(st.web)+'</a>'
+      : '<span style="color:var(--muted)">—</span>';
+    var wikiHtml = st.wiki ? '<a href="'+esc(st.wiki)+'" target="_blank" rel="noopener">'+hl(st.wiki)+'</a>'
+      : '<span style="color:var(--muted)">—</span>';
+    var webcastHtml = '';
+    if(st.webcast) webcastHtml += '<a href="'+esc(st.webcast)+'" target="_blank" rel="noopener">'+hl(st.webcast)+'</a>';
+    if(st.webcast2) webcastHtml += (webcastHtml ? '<br>' : '') + '<a href="'+esc(st.webcast2)+'" target="_blank" rel="noopener">'+hl(st.webcast2)+'</a>';
+    if(st.webcast3) webcastHtml += (webcastHtml ? '<br>' : '') + '<a href="'+esc(st.webcast3)+'" target="_blank" rel="noopener">'+hl(st.webcast3)+'</a>';
+    if(!webcastHtml) webcastHtml = '<span style="color:var(--muted)">—</span>';
+    var infoHtml = st.info ? hl(st.info).replace(/\n/g,'<br>') : '<span style="color:var(--muted)">—</span>';
+    var affHtml = st.aff ? hl(st.aff).replace(/\n/g,'<br>') : '<span style="color:var(--muted)">—</span>';
+    var flagsHtml = (st.flags && st.flags.length)
+      ? st.flags.map(function(f){ return hl(f); }).join('<br>')
+      : '<span style="color:var(--muted)">—</span>';
+    var starHtml = '<button class="fav-btn'+(st.fav?' on':'')+'" data-fav="'+st.id+
+      '" title="Toggle favorite" aria-label="Toggle favorite">'+(st.fav?'★':'☆')+'</button>';
+
+    htmlParts.push(buildSeparatorRow(st, absoluteIndex, globalNumber));
+
+    if(compactMode){
+      htmlParts.push('<tr class="station-group-start" data-id="'+st.id+'">'+
+        '<td>Call letters</td>'+
+        '<td><div class="call-cell" data-play-call="'+st.id+'" title="Tap station name to play">'+
+          starHtml+
+          '<span class="status-dot dot-unknown" data-dot="'+st.id+'"></span>'+
+          '<strong>'+hl(st.call||'(no call letters)')+'</strong>'+
+        '</div></td></tr>');
+      htmlParts.push('<tr data-id="'+st.id+'"><td>Branding</td><td>'+hl(st.brand||'—')+'</td></tr>');
+      htmlParts.push('<tr data-id="'+st.id+'"><td>Frequency</td><td><div class="freq-cell"><span class="freq-text">'+hl(st.freq||'—')+'</span></div></td></tr>');
+      htmlParts.push('<tr data-id="'+st.id+'"><td>Location</td><td>'+hl(st.loc||'—')+'</td></tr>');
+      htmlParts.push('<tr data-id="'+st.id+'"><td>Genre</td><td>'+hl(st.genre||'—')+'</td></tr>');
+      htmlParts.push('<tr data-id="'+st.id+'" class="compact-aff"><td>Affiliations</td><td>'+affHtml+'</td></tr>');
+      if(st.flags && st.flags.length){
+        htmlParts.push('<tr data-id="'+st.id+'"><td>Additional Information</td><td>'+flagsHtml+'</td></tr>');
+      }
+      if(st.webcast || st.webcast2 || st.webcast3){
+        htmlParts.push('<tr data-id="'+st.id+'"><td>Webcast</td><td>'+webcastHtml+'</td></tr>');
+      }
+      htmlParts.push('<tr data-id="'+st.id+'" class="compact-last"><td colspan="2" style="padding:0;border:none;height:2px;background:var(--accent)"></td></tr>');
+      return;
+    }
+
+    htmlParts.push('<tr class="station-group-start" data-id="'+st.id+'">'+
+      '<td>Call letters</td>'+
+      '<td><div class="call-cell" data-play-call="'+st.id+'" title="Click to load this station">'+
+        starHtml+
+        '<span class="status-dot dot-unknown" data-dot="'+st.id+'"></span>'+
+        '<strong>'+hl(st.call||'(no call letters)')+'</strong>'+
+      '</div></td></tr>');
+    htmlParts.push('<tr data-id="'+st.id+'"><td>Branding</td><td>'+hl(st.brand||'—')+'</td></tr>');
+    htmlParts.push('<tr data-id="'+st.id+'"><td>Frequency</td><td><div class="freq-cell"><span class="freq-text">'+hl(st.freq||'—')+'</span></div></td></tr>');
+    htmlParts.push('<tr data-id="'+st.id+'"><td>Location</td><td>'+hl(st.loc||'—')+'</td></tr>');
+    htmlParts.push('<tr data-id="'+st.id+'"><td>Genre</td><td>'+hl(st.genre||'—')+'</td></tr>');
+    htmlParts.push('<tr data-id="'+st.id+'"><td>Stream URL(s)</td><td>'+urlsHtml+'</td></tr>');
+    htmlParts.push('<tr data-id="'+st.id+'"><td>Webcast</td><td>'+webcastHtml+'</td></tr>');
+    htmlParts.push('<tr data-id="'+st.id+'"><td>Website</td><td>'+webHtml+'</td></tr>');
+    htmlParts.push('<tr data-id="'+st.id+'"><td>Wikipedia</td><td>'+wikiHtml+'</td></tr>');
+    htmlParts.push('<tr data-id="'+st.id+'"><td>Station information</td><td>'+infoHtml+'</td></tr>');
+    htmlParts.push('<tr data-id="'+st.id+'"><td>Affiliations</td><td>'+affHtml+'</td></tr>');
+    htmlParts.push('<tr data-id="'+st.id+'"><td>Additional Information</td><td>'+flagsHtml+'</td></tr>');
+    htmlParts.push('<tr data-id="'+st.id+'"><td>Actions</td><td><div class="actions">'+
+      '<button class="danger" data-del="'+st.id+'">Delete</button></div></td></tr>');
+  });
+
+  tbody.innerHTML = htmlParts.join('');
+
+  var showPager = totalPages > 1;
+  pager.style.display = showPager ? 'flex' : 'none';
+  pagerTop.style.display = showPager ? 'flex' : 'none';
+
+  var pagerHTML = 'Page <b>'+currentPage+'</b> of <b>'+totalPages+'</b> — '+total+' result'+(total===1?'':'s');
+  pgInfo.innerHTML = pagerHTML;
+  pgInfoTop.innerHTML = pagerHTML;
+
+  pgPrev.disabled = currentPage <= 1;
+  pgNext.disabled = currentPage >= totalPages;
+  pgPrevTop.disabled = currentPage <= 1;
+  pgNextTop.disabled = currentPage >= totalPages;
+
+  pageItems.forEach(function(st){
+    var first = (st.urls||[])[0]; if(!first) return;
+    checkStreamOnline(first).then(function(ok){
+      var dot = tbody.querySelector('[data-dot="'+st.id+'"]');
+      if(dot) dot.className = 'status-dot ' + (ok?'dot-on':'dot-off');
+    });
+  });
+}
+
+function toggleFav(id){
+  var db = getDB().slice();
+  var st = db.find(function(s){ return s.id===id; });
+  if(!st) return;
+  st.fav = !st.fav;
+  RS.setDB(db);
+  if(!saveDB(db)){ st.fav = !st.fav; RS.setDB(db); return; }
+  tbody.querySelectorAll('button[data-fav="'+id+'"]').forEach(function(b){
+    b.textContent = st.fav ? '★' : '☆';
+    b.classList.toggle('on', !!st.fav);
+  });
+  if(RS.getCurrentId() === id){
+    var pf = el('p-fav');
+    pf.textContent = st.fav ? '★' : '☆';
+    pf.classList.toggle('on', !!st.fav);
+  }
+  if(viewMode === 'favorites') renderTable();
+}
+window.__toggleFav = toggleFav;
+
+tbody.addEventListener('click', function(e){
+  var favBtn = e.target.closest('button[data-fav]');
+  if(favBtn){ e.stopPropagation(); toggleFav(favBtn.dataset.fav); return; }
+  var sepRow = e.target.closest('tr.station-separator');
+  if(sepRow && sepRow.dataset.playSep){
+    e.stopPropagation(); selectStation(sepRow.dataset.playSep, true); return;
+  }
+  var callCell = e.target.closest('.call-cell');
+  if(callCell && !e.target.closest('button[data-fav]')){
+    selectStation(callCell.dataset.playCall, true); return;
+  }
+  var btn = e.target.closest('button'); if(!btn) return;
+  if(btn.dataset.del) deleteStation(btn.dataset.del);
+});
+
+/* ==================== DYNAMIC ROWS ==================== */
+function makeDynRow(kind, value){
+  var row = document.createElement('div');
+  row.className = 'dyn-row';
+
+  var num = document.createElement('span');
+  num.className = 'dyn-num';
+
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.className = kind === 'url' ? 'url-input' : 'flag-input';
+  input.placeholder = kind === 'url' ? 'https://...' : 'Additional info…';
+  input.value = value || '';
+
+  var rm = document.createElement('button');
+  rm.type = 'button';
+  rm.className = 'rm-btn';
+  rm.textContent = '×';
+  rm.title = 'Remove';
+  rm.setAttribute('aria-label', 'Remove');
+  rm.onclick = function(){
+    var container = row.parentNode;
+    container.removeChild(row);
+    renumberRows(container);
+  };
+
+  row.appendChild(num);
+  row.appendChild(input);
+  row.appendChild(rm);
+  return row;
+}
+
+function renumberRows(container){
+  if(!container) return;
+  var rows = container.querySelectorAll('.dyn-row');
+  rows.forEach(function(r, i){
+    var n = r.querySelector('.dyn-num');
+    if(n) n.textContent = (i+1) + '.';
+    var rm = r.querySelector('.rm-btn');
+    if(rm) rm.style.display = rows.length > 1 ? 'inline-flex' : 'none';
+  });
+}
+
+function buildDynFields(container, kind, values, minCount){
+  if(!container) return;
+  container.innerHTML = '';
+  var items = (values || []).filter(Boolean);
+  var count = Math.max(minCount, items.length);
+  for(var i=0;i<count;i++){
+    container.appendChild(makeDynRow(kind, items[i] || ''));
+  }
+  renumberRows(container);
+}
+
+function collectDyn(container){
+  var out = [];
+  if(!container) return out;
+  container.querySelectorAll('.dyn-row input').forEach(function(inp){
+    var v = (inp.value || '').trim();
+    if(v) out.push(v);
+  });
+  return out;
+}
+
+el('btn-add-url').addEventListener('click', function(){
+  var c = el('f-url-fields');
+  c.appendChild(makeDynRow('url', ''));
+  renumberRows(c);
+  var last = c.lastChild;
+  var inp = last && last.querySelector('input');
+  if(inp) inp.focus();
+});
+el('btn-add-flag').addEventListener('click', function(){
+  var c = el('f-flag-fields');
+  c.appendChild(makeDynRow('flag', ''));
+  renumberRows(c);
+  var last = c.lastChild;
+  var inp = last && last.querySelector('input');
+  if(inp) inp.focus();
+});
+
+/* ==================== MODAL ==================== */
+var modalBg = el('modal-bg');
+function openModal(id){
+  el('modal-title').textContent = id ? 'Edit station' : 'Add station';
+  el('f-id').value = id || '';
+  var st = id ? (getDB().find(function(s){ return s.id===id; }) || {}) : {};
+
+  el('f-call').value = st.call||'';
+  el('f-brand').value = st.brand||'';
+  el('f-freq').value = st.freq||'';
+  el('f-loc').value = st.loc||'';
+  el('f-genre').value = st.genre||'';
+  el('f-webcast1').value = st.webcast||'';
+  el('f-webcast2').value = st.webcast2||'';
+  el('f-webcast3').value = st.webcast3||'';
+  el('f-web').value = st.web||'';
+  el('f-wiki').value = st.wiki||'';
+  el('f-img').value = st.img||'';
+  el('f-img-dark').value = st.imgDark||'';
+  el('f-info').value = st.info||'';
+  el('f-aff').value = st.aff||'';
+  el('f-fav').checked = !!st.fav;
+  el('f-geoblocked').checked = !!st.geoblocked;
+
+  buildDynFields(el('f-url-fields'), 'url', st.urls || [], 4);
+  buildDynFields(el('f-flag-fields'), 'flag', st.flags || [], 2);
+
+  modalBg.classList.add('open');
+  setTimeout(function(){ el('f-call').focus(); },50);
+}
+window.__openModal = openModal;
+function closeModal(){ modalBg.classList.remove('open'); }
+el('btn-cancel').onclick = closeModal;
+modalBg.addEventListener('click', function(e){ if(e.target===modalBg) closeModal(); });
+
+function findDuplicate(call, urls, excludeId){
+  var c = (call||'').trim().toLowerCase();
+  var uSet = new Set((urls||[]).map(function(u){ return (u||'').trim().toLowerCase(); }).filter(Boolean));
+  var db = getDB();
+  for(var i=0;i<db.length;i++){
+    var s = db[i]; if(excludeId && s.id===excludeId) continue;
+    var sc = (s.call||'').trim().toLowerCase();
+    if(c && sc && c===sc) return s;
+    var su = (s.urls||[]).map(function(u){ return (u||'').trim().toLowerCase(); });
+    for(var j=0;j<su.length;j++){ if(su[j] && uSet.has(su[j])) return s; }
+  }
+  return null;
+}
+
+el('btn-save').onclick = function(){
+  var id = el('f-id').value;
+  var st = {
+    id: id || uid(),
+    call: el('f-call').value.trim(),
+    brand: el('f-brand').value.trim(),
+    freq: el('f-freq').value.trim(),
+    loc: el('f-loc').value.trim(),
+    genre: el('f-genre').value.trim(),
+    urls: collectDyn(el('f-url-fields')),
+    flags: collectDyn(el('f-flag-fields')),
+    webcast: el('f-webcast1').value.trim(),
+    webcast2: el('f-webcast2').value.trim(),
+    webcast3: el('f-webcast3').value.trim(),
+    web: el('f-web').value.trim(),
+    wiki: el('f-wiki').value.trim(),
+    img: el('f-img').value.trim(),
+    imgDark: el('f-img-dark').value.trim(),
+    info: el('f-info').value.trim(),
+    aff: el('f-aff').value.trim(),
+    fav: el('f-fav').checked,
+    geoblocked: el('f-geoblocked').checked
+  };
+  if(!st.call && !st.urls.length){ alert('Please enter at least a call letters or a stream URL.'); return; }
+  if(!id){
+    var dup = findDuplicate(st.call, st.urls, null);
+    if(dup){
+      var label = dup.call||dup.freq||dup.loc||'(unnamed station)';
+      var proceed = confirm('A station that looks like this already exists:\n\n• '+label+(dup.freq?' — '+dup.freq:'')+'\n\nAdd it anyway?');
+      if(!proceed) return;
+    }
+  }
+  var db = getDB().slice();
+  if(id){
+    var i = db.findIndex(function(s){ return s.id===id; });
+    if(i>=0) db[i] = st;
+  } else db.push(st);
+  db = sortStations(db);
+  if(!saveDB(db)){ alert('Could not save — storage limit reached.'); return; }
+  RS.setDB(db);
+  renderTable();
+  closeModal();
+  if(!RS.getCurrentId() || RS.getCurrentId()===st.id) selectStation(st.id, false);
+};
+
+function deleteStation(id){
+  var db = getDB(); var st = db.find(function(s){ return s.id===id; });
+  if(!st) return;
+  var label = st.call||st.freq||'this station';
+  if(!confirm('Delete "'+label+'"?\n\nThis cannot be undone.')) return;
+  var ndb = db.filter(function(s){ return s.id!==id; });
+  if(!saveDB(ndb)){ alert('Could not save deletion — storage error.'); return; }
+  RS.setDB(ndb);
+  if(RS.getCurrentId()===id) resetPlayer();
+  renderTable();
+  alert('"'+label+'" was deleted.');
+}
+
+function clearAll(){
+  var db = getDB();
+  if(!db.length){ alert('The database is already empty.'); return; }
+  if(!confirm('WARNING\n\nYou are about to delete ALL '+db.length+' station(s).\n\nThis cannot be undone.')) return;
+  if(!confirm('Are you absolutely sure?\n\nAll '+db.length+' station(s) will be permanently deleted.')) return;
+  if(!saveDB([])){ alert('Could not clear database — storage error.'); return; }
+  RS.setDB([]);
+  resetPlayer();
+  currentPage = 1;
+  renderTable();
+  alert('All stations deleted.');
+}
+
+async function exportDB(){
+  var data = {exportedAt:new Date().toISOString(), version:15, stations:getDB()};
+  var jsonText = JSON.stringify(data, null, 2);
+  var defaultName = 'radio-db-'+new Date().toISOString().slice(0,10)+'.json';
+
+  if(window.showSaveFilePicker){
+    try{
+      var handle = await window.showSaveFilePicker({
+        suggestedName: defaultName,
+        types:[{description:'JSON file', accept:{'application/json':['.json']}}]
+      });
+      var writable = await handle.createWritable();
+      await writable.write(jsonText);
+      await writable.close();
+      alert('Exported successfully to:\n'+handle.name);
+      return;
+    }catch(err){
+      if(err && err.name==='AbortError') return;
+      console.warn('File System Access API failed, falling back:', err);
+    }
+  }
+  try{
+    var blob = new Blob([jsonText], {type:'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = defaultName;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+    alert('Export started. On Android the file is usually saved in your Downloads folder.');
+  }catch(e){
+    alert('Export failed: '+e.message);
+  }
+}
+
+el('file-import').onchange = function(e){
+  var file = e.target.files[0]; if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    try{
+      var parsed = JSON.parse(reader.result);
+      var list = Array.isArray(parsed) ? parsed : (parsed.stations || []);
+      if(!Array.isArray(list)) throw new Error('Invalid format');
+      var db = getDB();
+      var mode = db.length ? (confirm('Merge with existing database?\n\nOK = merge\nCancel = replace') ? 'merge' : 'replace') : 'replace';
+      var clean = list.map(function(s){
+        return {
+          id: s.id || uid(),
+          call: s.call || '', brand: s.brand || '', freq: s.freq || '', loc: s.loc || '',
+          genre: s.genre || '',
+          urls: Array.isArray(s.urls) ? s.urls.filter(Boolean) : (s.url ? [s.url] : []),
+          flags: Array.isArray(s.flags) ? s.flags.filter(Boolean) : [],
+          webcast: s.webcast || '', webcast2: s.webcast2 || '', webcast3: s.webcast3 || '',
+          web: s.web || '', wiki: s.wiki || '', img: s.img || '', imgDark: s.imgDark || '',
+          info: s.info || '', aff: s.aff || '', fav: !!s.fav, geoblocked: !!s.geoblocked
+        };
+      });
+      if(mode === 'merge'){
+        var existing = new Set(db.map(function(x){ return x.id; }));
+        clean.forEach(function(c){ if(!existing.has(c.id)) db.push(c); });
+      } else db = clean;
+      db = sortStations(db);
+      if(!saveDB(db)){ alert('Import succeeded in memory but could not be saved (storage limit). Export your data to keep it.'); }
+      RS.setDB(db);
+      currentPage = 1;
+      renderTable();
+      alert('Imported '+clean.length+' station(s).');
+    }catch(err){
+      alert('Import failed: '+err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+};
+
+renderTable();
+resetPlayer();
+})();
+</script>
 </body>
 </html>
