@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f0f10">
+<title>Radio</title>
+<style>
+  :root {
+    --bg: #0f0f10;
+    --surface: #17171a;
+    --surface-2: #1e1e22;
+    --border: #2a2a30;
+    --text: #f2f2f4;
+    --muted: #9a9aa2;
+    --accent: #3b82f6;
+    --danger: #ef4444;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: flex; flex-direction: column;
+    -webkit-tap-highlight-color: transparent;
+  }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(15,15,16,.92); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: .75rem 1rem .5rem;
+  }
+  .brand { font-weight: 700; font-size: 1.05rem; margin-bottom: .6rem; letter-spacing: .3px; }
+  input[type="search"] {
+    width: 100%; padding: .65rem .8rem; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); font-size: .95rem; outline: none;
+  }
+  input[type="search"]:focus { border-color: var(--accent); }
+  .tabs { display: flex; gap: .25rem; margin-top: .5rem; }
+  .tab {
+    padding: .45rem .85rem; border-radius: 8px; cursor: pointer;
+    font-size: .85rem; color: var(--muted); border: 0; background: transparent;
+  }
+  .tab.active { background: var(--surface-2); color: var(--text); }
+  main { flex: 1; overflow-y: auto; padding: .5rem 0 6rem; }
+  ul { list-style: none; padding: 0; margin: 0; }
+  li.station {
+    display: flex; gap: .8rem; align-items: center;
+    padding: .7rem 1rem; cursor: pointer;
+    border-bottom: 1px solid var(--border);
+  }
+  li.station:hover, li.station.active { background: var(--surface); }
+  li.station.active { box-shadow: inset 3px 0 0 var(--accent); }
+  .logo {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--surface-2); object-fit: cover; flex-shrink: 0;
+  }
+  .info { flex: 1; min-width: 0; }
+  .name { font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .meta { font-size: .78rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  .fav {
+    background: transparent; border: 0; color: var(--muted);
+    font-size: 1.2rem; cursor: pointer; padding: .25rem .4rem;
+  }
+  .fav.on { color: #f5b301; }
+  .empty { color: var(--muted); text-align: center; padding: 2rem 1rem; }
+  .status { color: var(--muted); text-align: center; padding: 1rem; font-size: .85rem; }
+
+  #player {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    background: rgba(23,23,26,.96); backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border);
+    padding: .6rem .8rem calc(.6rem + env(safe-area-inset-bottom));
+    display: grid; grid-template-columns: auto 1fr auto; gap: .75rem; align-items: center;
+  }
+  #player .logo { width: 42px; height: 42px; }
+  #player .info .name { font-size: .9rem; }
+  #player .info .meta { font-size: .75rem; }
+  .controls { display: flex; align-items: center; gap: .5rem; }
+  .btn {
+    background: var(--accent); color: white; border: 0;
+    width: 44px; height: 44px; border-radius: 50%;
+    font-size: 1.1rem; cursor: pointer; display: grid; place-items: center;
+  }
+  .btn:disabled { background: var(--surface-2); color: var(--muted); cursor: default; }
+  .vol { width: 90px; accent-color: var(--accent); }
+  @media (max-width: 420px) { .vol { display: none; } }
+  .banner {
+    background: var(--danger); color: white; font-size: .8rem;
+    padding: .5rem 1rem; text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">📻 Radio</div>
+  <div class="search-row">
+    <input id="q" type="search" placeholder="Search stations…" autocomplete="off">
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-tab="browse">Browse</button>
+    <button class="tab" data-tab="favs">Favorites</button>
+  </div>
+</header>
+
+<main>
+  <div id="banner" class="banner" hidden></div>
+  <div id="status" class="status" hidden></div>
+  <ul id="list"></ul>
+</main>
+
+<div id="player">
+  <img id="pLogo" class="logo" alt="">
+  <div class="info">
+    <div id="pName" class="name">Nothing playing</div>
+    <div id="pMeta" class="meta">Pick a station</div>
+  </div>
+  <div class="controls">
+    <input id="vol" class="vol" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="Volume">
+    <button id="toggle" class="btn" aria-label="Play">▶</button>
+  </div>
+</div>
+
+<audio id="audio" preload="none"></audio>
+
+<script>
+(() => {
+  'use strict';
+
+  const API = 'https://all.api.radio-browser.info/json';
+  // CHANGE THIS TO INCLUDE YOUR EMAIL OR USERNAME
+  const UA = 'MyRadioPlayer/1.0 (yourname@example.com)'; 
+
+  const $ = (id) => document.getElementById(id);
+  const audio = $('audio');
+  const list = $('list');
+  const statusEl = $('status');
+  const banner = $('banner');
+  const toggleBtn = $('toggle');
+  const vol = $('vol');
+  const pName = $('pName');
+  const pMeta = $('pMeta');
+  const pLogo = $('pLogo');
+
+  const state = { tab: 'browse', stations: [], favorites: loadFavorites(), current: null };
+
+  function loadFavorites() {
+    try { return JSON.parse(localStorage.getItem('favorites') || '[]'); } catch { return []; }
+  }
+  function saveFavorites() {
+    try { localStorage.setItem('favorites', JSON.stringify(state.favorites)); } catch {}
+  }
+  function isFav(uuid) { return state.favorites.some(s => s.stationuuid === uuid); }
+  function toggleFav(station) {
+    if (isFav(station.stationuuid)) {
+      state.favorites = state.favorites.filter(s => s.stationuuid !== station.stationuuid);
+    } else {
+      state.favorites.push(minify(station));
+    }
+    saveFavorites();
+    render();
+  }
+  function minify(s) {
+    return {
+      stationuuid: s.stationuuid, name: s.name,
+      url_resolved: s.url_resolved, favicon: s.favicon || '',
+      country: s.country || '', codec: s.codec || '', bitrate: s.bitrate || 0,
+    };
+  }
+
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  function showStatus(msg) {
+    if (!msg) { statusEl.hidden = true; statusEl.textContent = ''; return; }
+    statusEl.hidden = false; statusEl.textContent = msg;
+  }
+  function showBanner(msg) {
+    if (!msg) { banner.hidden = true; banner.textContent = ''; return; }
+    banner.hidden = false; banner.textContent = msg;
+  }
+
+  async function apiFetch(path, params = {}) {
+    const url = new URL(API + path);
+    for (const [k, v] of Object.entries(params)) {
+      if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
+    }
+    const res = await fetch(url, { headers: { 'User-Agent': UA } });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.json();
+  }
+
+  async function loadBrowse(query = '') {
+    showStatus('Loading stations…');
+    try {
+      const data = await apiFetch('/stations/search', {
+        hidebroken: 'true', is_https: 'true', limit: 60,
+        order: 'clickcount', reverse: 'true', name: query || undefined,
+      });
+      state.stations = data.map(minify);
+      showStatus(data.length ? '' : 'No stations found.');
+    } catch (e) {
+      console.error(e);
+      state.stations = [];
+      showStatus('Could not load stations. Check connection.');
+    } finally {
+      render();
+    }
+  }
+
+  async function registerClick(uuid) {
+    try { await fetch(`${API}/url/${encodeURIComponent(uuid)}`, { headers: { 'User-Agent': UA } }); } catch {}
+  }
+
+  function render() {
+    const items = state.tab === 'browse' ? state.stations : state.favorites;
+    list.innerHTML = '';
+    if (!items.length) {
+      const li = document.createElement('li');
+      li.className = 'empty';
+      li.textContent = state.tab === 'favs' ? 'No favorites yet.' : 'Search for a station.';
+      list.appendChild(li);
+      return;
+    }
+    const frag = document.createDocumentFragment();
+    for (const s of items) {
+      const li = document.createElement('li');
+      li.className = 'station' + (state.current && state.current.stationuuid === s.stationuuid ? ' active' : '');
+      const img = document.createElement('img');
+      img.className = 'logo'; img.loading = 'lazy'; img.alt = '';
+      if (s.favicon && /^https?:\/\//.test(s.favicon)) img.src = s.favicon;
+      img.onerror = () => { img.style.visibility = 'hidden'; };
+      const info = document.createElement('div');
+      info.className = 'info';
+      info.innerHTML = `<div class="name">${esc(s.name)}</div>
+        <div class="meta">${esc([s.country, s.codec, s.bitrate ? s.bitrate + 'k' : ''].filter(Boolean).join(' · '))}</div>`;
+      const fav = document.createElement('button');
+      fav.className = 'fav' + (isFav(s.stationuuid) ? ' on' : '');
+      fav.textContent = isFav(s.stationuuid) ? '★' : '☆';
+      fav.onclick = (e) => { e.stopPropagation(); toggleFav(s); };
+      li.append(img, info, fav);
+      li.onclick = () => playStation(s);
+      frag.appendChild(li);
+    }
+    list.appendChild(frag);
+  }
+
+  function playStation(s) {
+    showBanner('');
+    state.current = s;
+    pName.textContent = s.name;
+    pMeta.textContent = [s.country, s.codec].filter(Boolean).join(' · ') || 'Streaming';
+    pLogo.style.visibility = 'hidden';
+    if (s.favicon && /^https?:\/\//.test(s.favicon)) {
+      pLogo.src = s.favicon;
+      pLogo.onload = () => { pLogo.style.visibility = 'visible'; };
+    }
+    audio.src = s.url_resolved;
+    audio.play().catch(() => showBanner('Stream failed — try another station.'));
+    registerClick(s.stationuuid);
+    if ('mediaSession' in navigator) {
+      try {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: s.name, artist: s.country || 'Radio',
+          artwork: s.favicon ? [{ src: s.favicon }] : []
+        });
+      } catch {}
+    }
+    document.title = `${s.name} — Radio`;
+    render();
+  }
+
+  toggleBtn.onclick = () => {
+    if (!state.current) return;
+    if (audio.paused) audio.play().catch(() => showBanner('Playback failed.'));
+    else audio.pause();
+  };
+
+  vol.oninput = () => { audio.volume = parseFloat(vol.value); };
+  audio.addEventListener('play', () => toggleBtn.textContent = '⏸');
+  audio.addEventListener('pause', () => toggleBtn.textContent = '▶');
+  audio.addEventListener('error', () => { if (state.current) showBanner('Stream error.'); });
+  audio.addEventListener('playing', () => showBanner(''));
+
+  document.querySelectorAll('.tab').forEach((btn) => {
+    btn.onclick = () => {
+      document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b === btn));
+      state.tab = btn.dataset.tab;
+      render();
+    };
+  });
+
+  let debounce;
+  $('q').addEventListener('input', (e) => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => loadBrowse(e.target.value.trim()), 350);
+  });
+
+  audio.volume = parseFloat(vol.value);
+  loadBrowse('');
+})();
+</script>
+
+</body>
+</html>
